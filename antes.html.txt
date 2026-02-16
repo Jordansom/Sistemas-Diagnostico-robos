@@ -1,0 +1,2362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Quálitas Prevención de riesgos - Análisis y diagnóstico de Robos</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  :root { 
+    --color-primary: #82027C; 
+    --color-secondary: #156082; 
+    --light-gray: #f8f9fa; 
+    --medium-gray: #e9ecef; 
+    --dark-gray: #343a40; 
+    --page-bg: #eef3f6; 
+    --warning-light: #fff3cd; 
+    --warning-dark: #ffc107;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --bar-empy: hsl(199, 81%, 65%);
+    --bar-full: rgba(10, 196, 16, 0.998);
+} 
+
+* { transition: background-color 0.3s ease, border-color 0.3s ease; }
+
+body { 
+    font-family: 'Roboto', Arial, sans-serif; 
+    background: linear-gradient(135deg, #eef3f6 0%, #e3eef5 100%);
+    color: var(--dark-gray);
+    overflow-x: hidden;
+}
+
+/* --- ESTILOS DE LOGIN Y ANIMACIONES COMPLEJAS (ORIGINALES) --- */
+#login-overlay { 
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; 
+    background: linear-gradient(135deg, rgba(130,2,124,0.95) 0%, rgba(21,96,130,0.97) 35%, rgba(0,78,100,0.98) 65%, rgba(10,20,40,0.96) 100%);
+    z-index: 9999; backdrop-filter: blur(10px);
+}
+#login-overlay::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px; animation: gridMove 20s linear infinite;
+}
+@keyframes gridMove { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
+
+#login-box { 
+    background: linear-gradient(135deg, rgba(130,2,124,0.95) 0%, rgba(21,96,130,0.92) 50%, rgba(10,40,60,0.94) 100%);
+    padding: 2.5rem; border-radius: 20px; 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+    width: 400px; max-width: calc(100% - 32px); text-align: center; position: relative; overflow: hidden; z-index: 1; backdrop-filter: blur(20px);
+}
+#login-box::before {
+    content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+    background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(130,2,124,0.5), rgba(21,96,130,0.5), rgba(255,255,255,0.3));
+    border-radius: 20px; z-index: -1; opacity: 0; animation: borderGlow 3s ease-in-out infinite;
+}
+@keyframes borderGlow { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+#login-box img { 
+    width: 140px; margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 20px rgba(255,255,255,0.3)) brightness(1.1);
+    animation: logoRotate3D 6s ease-in-out infinite; transform-style: preserve-3d;
+}
+@keyframes logoRotate3D {
+    0%, 100% { transform: perspective(1000px) rotateY(0deg) scale(1); filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 20px rgba(255,255,255,0.3)) brightness(1.1); }
+    25% { transform: perspective(1000px) rotateY(10deg) scale(1.05); filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(255,255,255,0.5)) brightness(1.2); }
+    50% { transform: perspective(1000px) rotateY(0deg) scale(1.08); filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 40px rgba(130,2,124,0.6)) brightness(1.25); }
+    75% { transform: perspective(1000px) rotateY(-10deg) scale(1.05); filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(21,96,130,0.5)) brightness(1.2); }
+}
+
+#login-box h2 { color: #ffffff; margin-bottom: 1.5rem; font-weight: 700; font-size: 1.5rem; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+#login-box input { 
+    width: 100%; padding: 12px 16px; margin: 10px 0; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2);
+    font-size: 15px; transition: var(--transition-smooth); background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: white;
+}
+#login-box input::placeholder { color: rgba(255,255,255,0.6); }
+#login-box input:focus { outline: none; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.25); box-shadow: 0 0 0 3px rgba(255,255,255,0.1); }
+#login-box button { 
+    width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.15) 100%);
+    color: #fff; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; font-weight: 700; cursor: pointer;
+    transition: var(--transition-smooth); box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; backdrop-filter: blur(10px); text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+#login-box button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+#login-box button:hover::before { width: 300px; height: 300px; }
+#login-box button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.25) 100%); }
+#login-box .btn-secondary { background: linear-gradient(135deg, rgba(108,117,125,0.4) 0%, rgba(73,80,87,0.4) 100%); margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2); }
+#login-box .btn-secondary:hover { background: linear-gradient(135deg, rgba(108,117,125,0.5) 0%, rgba(73,80,87,0.5) 100%); }
+#login-error { color: #ff6b6b; margin-top: 12px; min-height: 18px; font-size: 14px; animation: shake 0.5s ease-in-out; text-shadow: 0 1px 3px rgba(0,0,0,0.3); font-weight: 600; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+/* Register Modal */
+#register-modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+#register-box { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 420px; max-width: calc(100% - 32px); text-align: center; position: relative; animation: modalSlideIn 0.3s ease-out; }
+@keyframes modalSlideIn { from { opacity: 0; transform: translateY(-30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+#register-box .close-button { position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; transition: var(--transition-smooth); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+#register-box .close-button:hover { color: #333; background: #f0f0f0; transform: rotate(90deg); }
+
+/* --- HEADER Y NAVEGACIÓN --- */
+.container-header { 
+    background: linear-gradient(135deg, rgba(130,2,124,0.95) 0%, rgba(21,96,130,0.92) 50%, rgba(10,40,60,0.94) 100%);
+    padding: 2rem 1rem 2rem 1rem; margin-bottom: 2.5rem; border-bottom: 4px solid transparent;
+    border-image: linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0.8), rgba(255,255,255,0.5)) 1;
+    text-align: center; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); overflow: hidden;
+}
+.container-header::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: shimmer 4s infinite; }
+@keyframes shimmer { 0% { left: -100%; } 100% { left: 100%; } }
+.container-header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 50%, rgba(130,2,124,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(21,96,130,0.3) 0%, transparent 50%); pointer-events: none; }
+.container-header img { 
+    position: absolute; top: 50%; left: 40px; transform: translateY(-50%); height: 90px;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(255,255,255,0.3)) brightness(1.15) contrast(1.1);
+    animation: logoWaveMagnetic 5s ease-in-out infinite; z-index: 2;
+}
+@keyframes logoWaveMagnetic {
+    0%, 100% { transform: translateY(-50%) scale(1) rotate(0deg); filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(255,255,255,0.3)) brightness(1.15); }
+    15% { transform: translateY(-50%) scale(1.03) rotate(-2deg); filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 35px rgba(130,2,124,0.5)) brightness(1.2); }
+    30% { transform: translateY(-50%) scale(1.06) rotate(0deg); filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7)) drop-shadow(0 0 45px rgba(21,96,130,0.6)) brightness(1.25); }
+    45% { transform: translateY(-50%) scale(1.03) rotate(2deg); filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 35px rgba(255,255,255,0.5)) brightness(1.2); }
+    60% { transform: translateY(-50%) scale(1.08) rotate(0deg); filter: drop-shadow(0 10px 28px rgba(0,0,0,0.8)) drop-shadow(0 0 50px rgba(130,2,124,0.7)) brightness(1.3) saturate(1.2); }
+    75% { transform: translateY(-50%) scale(1.04) rotate(-1deg); filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 35px rgba(21,96,130,0.5)) brightness(1.2); }
+}
+.container-header h3 { margin-bottom: 0.5rem; font-weight: 700; color: #ffffff; position: relative; z-index: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.2); }
+.container-header h4 { color: rgba(255,255,255,0.95); margin-bottom: 0.5rem; font-weight: 600; position: relative; z-index: 1; text-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+.container-header h2 { font-weight: 800; color: #ffffff; position: relative; z-index: 1; text-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 30px rgba(255,255,255,0.3); letter-spacing: 0.5px; }
+
+/* Estilos de Elementos del Formulario */
+.pregunta { padding: 1.25rem; border-left: 4px solid var(--medium-gray); margin-bottom: 1.25rem; background: white; border-radius: 12px; transition: var(--transition-smooth); opacity: 0; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+.pregunta::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: linear-gradient(180deg, var(--color-primary), var(--color-secondary)); transform: scaleY(0); transition: transform 0.3s ease; }
+.pregunta:hover::before { transform: scaleY(1); }
+.pregunta:hover { border-left-color: transparent; transform: translateX(8px); box-shadow: var(--shadow-md); }
+.pregunta.unanswered { border-left-color: var(--warning-dark); background: linear-gradient(135deg, #fff 0%, var(--warning-light) 100%); }
+
+.accordion-button:not(.collapsed) { background: linear-gradient(135deg, var(--color-secondary) 0%, #0d4e64 100%); color: white; box-shadow: var(--shadow-sm); }
+.accordion-item { border: 1px solid #dee2e6; margin-bottom: 1.25rem; border-radius: 12px !important; overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-smooth); }
+.accordion-item:hover { box-shadow: var(--shadow-md); }
+.accordion-body { max-height: 65vh; overflow-y: auto; background: linear-gradient(180deg, var(--page-bg) 0%, #f8f9fa 100%); padding: 1.75rem; }
+.accordion-body::-webkit-scrollbar { width: 8px; }
+.accordion-body::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+.accordion-body::-webkit-scrollbar-thumb { background: var(--color-secondary); border-radius: 10px; }
+.accordion-body::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* Panel Lateral */
+#side-nav-panel { position: sticky; top: 2rem; background: white; border-radius: 16px; padding: 1.75rem; box-shadow: var(--shadow-lg); border: 1px solid rgba(0,0,0,0.05); }
+.nav-card { background: linear-gradient(135deg, var(--light-gray) 0%, #f0f2f5 100%); border: 1px solid var(--medium-gray); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; cursor: pointer; transition: var(--transition-smooth); border-left: 4px solid var(--medium-gray); position: relative; overflow: hidden; }
+.nav-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(130,2,124,0.05) 0%, rgba(21,96,130,0.05) 100%); opacity: 0; transition: opacity 0.3s ease; }
+.nav-card:hover::before { opacity: 1; }
+.nav-card:hover { transform: translateY(-4px) translateX(4px); box-shadow: var(--shadow-md); border-left-color: var(--color-primary); }
+.nav-card.active { background: linear-gradient(135deg, var(--color-secondary) 0%, #0d5873 100%); border-left-color: var(--color-primary); color: white; box-shadow: var(--shadow-md); }
+.nav-card.active h6, .nav-card.active .nav-card-info { color: white; }
+.nav-card h6 { font-weight: 700; color: var(--color-secondary); margin-bottom: 0.5rem; transition: color 0.3s ease; }
+.progress-bar-container { background-color: rgba(0,0,0,0.1); border-radius: 10px; height: 8px; overflow: hidden; margin-top: .75rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+.progress-bar-fill { background: linear-gradient(90deg, var(--bar-empy) 0%, var(--bar-full) 100%); height: 100%; width: 0%; border-radius: 10px; box-shadow: 0 0 10px rgba(130,2,124,0.4); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.nav-card-info { font-size: 0.85rem; color: #6c757d; display: flex; justify-content: space-between; margin-top: 0.75rem; }
+
+.general-score-card { text-align: center; background: linear-gradient(135deg, var(--color-secondary) 0%, #004e64 100%); color: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-md); margin-top: 1rem; position: relative; overflow: hidden; }
+.general-score-card::before { content: ''; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: rotateGradient 10s linear infinite; }
+@keyframes rotateGradient { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.general-score-card h5 { position: relative; z-index: 1; }
+.general-score-card .general-score-value { font-size: 2rem; font-weight: 800; position: relative; z-index: 1; }
+
+.risk-badge { padding: 0.35em 0.75em; font-size: 0.75rem; font-weight: 700; border-radius: 8px; display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: var(--transition-smooth); }
+.risk-badge:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.risk-badge-BAJO { background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%); color: white; }
+.risk-badge-TOLERABLE { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: #343a40; }
+.risk-badge-ALTO { background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%); color: white; }
+.risk-badge-EXTREMO { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); color: white; }
+
+#btnSaveForLater { position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px; border-radius: 50%; box-shadow: 0 6px 20px rgba(0,0,0,0.25); font-size: 1.75rem; display: flex; align-items: center; justify-content: center; z-index: 1050; transition: var(--transition-smooth); animation: floatButton 3s ease-in-out infinite; }
+@keyframes floatButton { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+#btnSaveForLater:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+#btnSaveForLater:active { transform: scale(0.95); }
+
+.btn { border-radius: 10px; padding: 0.5rem 1.25rem; font-weight: 600; transition: var(--transition-smooth); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn:active { transform: translateY(0); }
+.btn-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; }
+.btn-primary { background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%); border: none; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+#main-content { animation: fadeInUp 0.6s ease-out; }
+
+.section-card.disabled { opacity: 0.6; background-color: #f8f9fa; }
+.toggle-section-btn.btn-success { background-color: #198754; border-color: #198754; color: white; }
+
+/* NUEVOS ESTILOS REQUERIDOS */
+#tipoMercanciaContainer, #estadosServicioContainer {
+    max-height: 250px; overflow-y: auto; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem;
+}
+#siniestrosTable th { background-color: var(--color-secondary); color: white; }
+#siniestrosTable .btn-remove-row { color: #dc3545; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: color 0.2s; }
+#siniestrosTable .btn-remove-row:hover { color: #a71d2a; }
+.placeholder-transparent::placeholder { color: rgba(0, 0, 0, 0.3) !important; font-style: italic; }
+
+@media (max-width: 768px) {
+    .container-header img { position: static; transform: none; margin: 0 auto 1rem; display: block; animation: logoBounceGlow 4s ease-in-out infinite; height: 80px; }
+    @keyframes logoBounceGlow {
+        0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 20px rgba(255,255,255,0.3)) brightness(1.1); }
+        20% { transform: translateY(-12px) scale(1.04); filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 35px rgba(130,2,124,0.6)) brightness(1.25); }
+        40% { transform: translateY(-4px) scale(1.02); filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 25px rgba(21,96,130,0.5)) brightness(1.18); }
+        50% { transform: translateY(-8px) scale(1.06); filter: drop-shadow(0 10px 24px rgba(0,0,0,0.7)) drop-shadow(0 0 40px rgba(255,255,255,0.5)) brightness(1.3); }
+        60% { transform: translateY(-2px) scale(1.01); filter: drop-shadow(0 5px 14px rgba(0,0,0,0.5)) drop-shadow(0 0 22px rgba(130,2,124,0.4)) brightness(1.15); }
+    }
+    #side-nav-panel { margin-bottom: 2rem; }
+    #login-box { width: 90%; padding: 2rem; }
+}
+</style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div id="login-box"><img src="PRQ.png" alt="Logo"><h2 id="login-title">Acceso al Prediagnóstico</h2><input id="login-username" type="text" placeholder="Usuario"><input id="login-password" type="password" placeholder="Contraseña"><button id="login-button" type="button">Ingresar</button><button id="show-register-button" type="button" class="btn-secondary">Registrar Nuevo Usuario</button><div id="login-error"></div></div>
+  </div>
+  
+  <div id="register-modal"><div id="register-box"><span id="close-modal-button" class="close-button">&times;</span><h2 id="register-title">Nuevo Registro</h2><input id="register-username" type="text" placeholder="Nuevo Usuario"><input id="register-password" type="password" placeholder="Nueva Contraseña"><input id="register-code" type="password" placeholder="Código de Registro"><button id="register-button" type="button">Crear Usuario</button><div id="register-error"></div><div id="register-success"></div></div>
+  </div>
+
+<div id="main-content" style="display: none;">
+    <div class="container-fluid container-header">
+      <img src="PRQ.png" alt="Logotipo Quálitas">
+      <h3 class="mb-1 fw-bold">Quálitas Compañía de Seguros</h3><h4 class="mb-2">Prevención de Riesgos</h4><h2 class="fw-bolder">Análisis y Diagnóstico de Robos</h2>
+    </div>
+<div class="container">
+      
+      <div class="accordion mb-3" id="pendingAccordion">
+        <div class="accordion-item border-warning">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-bold text-warning bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePending" aria-expanded="false">
+                🕒 Cuestionarios Pendientes (En Proceso)
+                </button>
+            </h2>
+            <div id="collapsePending" class="accordion-collapse collapse" data-bs-parent="#pendingAccordion">
+                <div class="accordion-body" id="pending-surveys-list">
+                    <p class="text-muted">Cargando...</p>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="accordion mb-4" id="completedAccordion">
+        <div class="accordion-item border-success">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-bold text-success bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCompleted" aria-expanded="false">
+                ✅ Cuestionarios Completados (Historial)
+                </button>
+            </h2>
+            <div id="collapseCompleted" class="accordion-collapse collapse" data-bs-parent="#completedAccordion">
+                <div class="accordion-body" id="completed-surveys-list">
+                    <p class="text-muted">Cargando...</p>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-3">
+          <div id="side-nav-panel">
+            <h4 class="text-center mb-4 fw-bold" style="color: var(--color-secondary);">Secciones</h4>
+            
+            <div id="nav-card-container"></div>
+            
+            <div class="general-score-card">
+                <h5 class="fw-bold">PUNTUACIÓN GENERAL</h5>
+                <div id="general-score-value" class="general-score-value">0.0 / 100</div>
+            </div>
+            
+            <div class="overall-risk-card text-center mt-3">
+                <h6>Nivel de Riesgo General</h6>
+                <div id="overall-risk-level" class="risk-badge"></div>
+            </div>
+            
+            <div class="chart-container mt-3">
+                <canvas id="compliance-radar-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-9">
+          <div class="alert alert-secondary small-note">
+            <strong>Instrucciones:</strong> Use el panel de la izquierda para navegar o expanda cada sección. Su progreso se guardará automáticamente en el panel.
+          </div>
+          
+          <form id="main-form">
+            <div class="accordion" id="formAccordion">
+              
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <strong>Sección 1: Antecedentes de la empresa</strong>
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+                  <div class="accordion-body">
+                    
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7">
+                          <label class="form-label">Nombre de la empresa o razón social</label>
+                          <input id="empresaNombre" class="form-control" type="text">
+                      </div>
+                      <div class="col-md-5">
+                          <label class="form-label">Fecha de entrevista</label>
+                          <input id="fechaEntrevista" class="form-control" type="date">
+                      </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Descripción breve de la empresa</label>
+                            <textarea id="descripcionEmpresa" class="form-control placeholder-transparent" rows="2" placeholder="Es una empresa (seguir describiendo)..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7"><label class="form-label">Indique su número de póliza</label><input id="numeroPoliza" class="form-control" type="text"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7"><label class="form-label">¿Cuentan con alguna certificación?</label><input id="certificacion" class="form-control" type="text"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7"><label class="form-label">¿Cuáles son tus principales clientes?</label><input id="principalesClientes" class="form-control" type="text"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-12">
+                        <label class="form-label">¿Qué tipo de mercancía movilizan? (Seleccione una o más)</label>
+                        <div id="tipoMercanciaContainer"></div>
+                        <input type="text" id="tipoMercanciaOtro" class="form-control form-control-sm mt-2" placeholder="Otro (especificar)">
+                      </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7"><label class="form-label">¿Qué riesgos viales específicos ha identificado la organización?</label><input id="riesgosViales" class="form-control" type="text"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7"><label class="form-label">¿Cuáles son las principales causas identificadas en los accidentes viales?</label><input id="causasSiniestros" class="form-control" type="text"></div>
+                    </div>
+
+                    <div class="row g-3">
+                      <div class="col-md-7"><label class="form-label">¿Qué oportunidades identifica la empresa para mejorar su desempeño vial?</label><input id="oportunidadesMejora" class="form-control" type="text"></div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        <strong>Sección 2: Datos de la organización y Siniestralidad</strong>
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                  <div class="accordion-body">
+                      
+                      <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-bold" style="color: var(--color-primary);">Estados donde tiene servicio la empresa (Cobertura)</label>
+                            <div id="estadosServicioContainer"></div>
+                        </div>
+                      </div>
+                      <hr>
+
+                      <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Indique el número de operadores activos</label><textarea class="form-control" id="numConductores" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Número de talleres de reparación</label><textarea class="form-control" id="numTalleres" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Kilómetros recorridos en el mes anterior de toda la flota</label><textarea class="form-control" id="kmRecorridosMes" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Viajes realizados en el último año</label><textarea class="form-control" id="viajesAnio" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Lesionados por accidentes de tránsito en el mes anterior</label><textarea class="form-control" id="lesionadosMes" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Lesionados por accidentes de tránsito en el último año</label><textarea class="form-control" id="lesionadosAnio" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Muertos por accidentes de tránsito en el mes anterior</label><textarea class="form-control" id="muertosMes" rows="1"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Muertos por accidentes de tránsito en el último año</label><textarea class="form-control" id="muertosAnio" rows="1"></textarea></div>
+
+                        <div class="col-md-12">
+                          <label class="form-label">Seleccione el Estado del corporativo o matriz</label>
+                          <select class="form-select" id="estadoMatriz"><option value="" selected>-- Seleccione un Estado --</option></select>
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label">Seleccione el Municipio del corporativo o matriz</label>
+                          <select class="form-select" id="municipioMatriz" disabled><option value="" selected>-- Seleccione un Municipio --</option></select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ubicaciones adicionales</label>
+                            <div id="lista-ubicaciones" class="mb-3"></div>
+                            <div class="card bg-light p-3">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4"><label class="form-label small">Sucursal</label><input type="text" id="sucursal-input" class="form-control form-control-sm"></div>
+                                    <div class="col-md-3"><label class="form-label small">Estado</label><select id="estado-input" class="form-select form-select-sm"><option value="" selected>-- Estado --</option></select></div>
+                                    <div class="col-md-3"><label class="form-label small">Municipio</label><select id="municipio-input" class="form-select form-select-sm" disabled><option value="" selected>-- Municipio --</option></select></div>
+                                    <div class="col-md-2"><button type="button" id="agregar-ubicacion-btn" class="btn btn-sm btn-success w-100">Agregar</button></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <div class="card border-danger mb-3" style="border: 1px solid #dc3545;">
+                                <div class="card-header bg-danger text-white fw-bold">Análisis de Siniestralidad (Datos para Informe)</div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        
+                                        <div class="col-md-4">
+                                            <label class="form-label">Fecha de consulta de Siniestralidad</label>
+                                            <input type="date" id="fechaConsultaSiniestralidad" class="form-control">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label class="form-label">Frecuencia Anualizada Actual (%)</label>
+                                            <input type="number" id="frecuenciaSiniestralidad" class="form-control placeholder-transparent" placeholder="Ej: 31 (Hasta la fecha se observa que la frecuencia reportada...)">
+                                            <small class="text-muted d-block mt-1">
+                                                <em>El reporte indicará si excede el estándar deseable del 24%.</em>
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <label class="form-label">Valor de Severidad ($)</label>
+                                            <input type="number" id="severidadSiniestralidad" class="form-control placeholder-transparent" placeholder="Ej: 17716">
+                                            <small class="text-muted">Se usará en: "En cuanto a la severidad el análisis indica un valor de..."</small>
+                                        </div>
+
+                                        <div class="col-12 mt-3">
+                                            <label class="form-label fw-bold">Desglose de Siniestros</label>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-sm table-striped" id="siniestrosTable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Tipo de Siniestro</th>
+                                                            <th style="width: 150px;">Número</th>
+                                                            <th style="width: 180px;">Monto ($)</th>
+                                                            <th style="width: 50px;"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="siniestrosTableBody">
+                                                        </tbody>
+                                                </table>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addSiniestroRow()">
+                                                <span style="font-size: 1.2em; vertical-align: middle;">+</span> Agregar Fila de Siniestro
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                  </div>
+                </div>
+              </div>
+
+<div id="formulario-dinamico"></div>
+            </div>
+          </form>
+          
+          <div class="text-center my-4">
+              <button id="btnFinalize" class="btn btn-success btn-lg" disabled>👍 Generar Informe y Finalizar </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button id="btnSaveForLater" class="btn btn-primary btn-lg" title="Guardar para más tarde">💾</button>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// --- VARIABLES GLOBALES ---
+window.allPendingSurveys = [];
+const scoreCounters = {};
+let complianceChart = null;
+let currentDisabledSections = []; 
+
+// --- CATÁLOGOS DE DATOS ---
+
+const tiposDeMercancia = [
+    "Alimentos & Bebidas", "Auto y Partes", "Combustible", "Químicos", "Farmacéuticos",
+    "Metales", "Cuidado Personal", "Ganado", "Construcción e Industrial", "Casa y Jardín",
+    "Misceláneos", "Alcohol", "Argo", "Electrónicos", "Ropa & Zapatos", "Tabaco"
+];
+
+const estadosConMunicipios = {
+    "Aguascalientes": ["Aguascalientes", "Asientos", "Calvillo", "Cosío", "Jesús María", "Pabellón de Arteaga", "Rincón de Romos", "San José de Gracia", "Tepezalá", "El Llano", "San Francisco de los Romo"],
+    "Baja California": ["Ensenada", "Mexicali", "Playas de Rosarito", "Tecate", "Tijuana", "San Quintín", "San Felipe"],
+    "Baja California Sur": ["Comondú", "Mulegé", "La Paz", "Los Cabos", "Loreto"],
+    "Campeche": ["Calkiní", "Campeche", "Carmen", "Champotón", "Hecelchakán", "Hopelchén", "Palizada", "Tenabo", "Escarcega", "Calakmul", "Candelaria"],
+    "Chiapas": ["Tuxtla Gutiérrez", "Tapachula", "San Cristóbal de las Casas", "Comitán de Domínguez", "Palenque", "Chiapa de Corzo", "Tonalá", "Ocosingo", "Villaflores", "Reforma", "Huixtla", "Berriozábal", "Cintalapa", "Motozintla", "Las Margaritas", "Mapastepec", "Las Rosas", "Arriaga", "Pichucalco", "Venustiano Carranza"],
+    "Chihuahua": ["Chihuahua", "Juárez", "Delicias", "Cuauhtémoc", "Parral", "Nuevo Casas Grandes", "Camargo", "Jiménez", "Meoqui", "Aldama", "Guachochi", "Madera", "Ascensión", "Namiquipa", "Guerrero", "Saucillo", "Ojinaga", "Ahualulco", "Bocoyna", "Buenaventura"],
+    "Ciudad de México": ["Álvaro Obregón", "Azcapotzalco", "Benito Juárez", "Coyoacán", "Cuajimalpa de Morelos", "Cuauhtémoc", "Gustavo A. Madero", "Iztacalco", "Iztapalapa", "La Magdalena Contreras", "Miguel Hidalgo", "Milpa Alta", "Tláhuac", "Tlalpan", "Venustiano Carranza", "Xochimilco"],
+    "Coahuila": ["Saltillo", "Torreón", "Monclova", "Piedras Negras", "Acuña", "Matamoros", "San Pedro", "Frontera", "Ramos Arizpe", "Sabinas", "Francisco I. Madero", "Múzquiz", "San Juan de Sabinas", "Parras", "Castaños", "Nava", "Allende", "Arteaga", "General Cepeda", "Cuatro Ciénegas"],
+    "Colima": ["Colima", "Manzanillo", "Tecomán", "Villa de Álvarez", "Armería", "Coquimatlán", "Cuauhtémoc", "Comala", "Ixtlahuacán", "Minatitlán"],
+    "Durango": ["Durango", "Gómez Palacio", "Lerdo", "Pueblo Nuevo", "Santiago Papasquiaro", "Guadalupe Victoria", "Cuencamé", "Canatlán", "Nuevo Ideal", "Tamazula", "Mapimí", "Vicente Guerrero", "Mezquital", "Nombre de Dios", "Poanas", "San Dimas", "El Oro", "Pánuco de Coronado", "Rodeo", "Súchil"],
+    "Guanajuato": ["León", "Irapuato", "Celaya", "Salamanca", "Guanajuato", "Silao de la Victoria", "San Miguel de Allende", "Pénjamo", "Valle de Santiago", "San Francisco del Rincón", "Dolores Hidalgo Cuna de la Independencia Nacional", "Cortazar", "Acámbaro", "San Luis de la Paz", "Yuriria", "Abasolo", "Moroleón", "Salvatierra", "Santa Cruz de Juventino Rosas", "Uriangato"],
+    "Guerrero": ["Acapulco de Juárez", "Chilpancingo de los Bravo", "Iguala de la Independencia", "Zihuatanejo de Azueta", "Taxco de Alarcón", "Chilapa de Álvarez", "Tlapa de Comonfort", "Coyuca de Benítez", "Ometepec", "Tecpan de Galeana", "Teloloapan", "Ayutla de los Libres", "San Marcos", "Tixtla de Guerrero", "Petatlán", "Atoyac de Álvarez", "Eduardo Neri", "Pungarabato", "Arcelia", "Coyuca de Catalán"],
+    "Hidalgo": ["Pachuca de Soto", "Mineral de la Reforma", "Tulancingo de Bravo", "Tizayuca", "Tula de Allende", "Huejutla de Reyes", "Tepeji del Río de Ocampo", "Ixmiquilpan", "Actopan", "Tepeapulco", "Atotonilco de Tula", "Cuautepec de Hinojosa", "Zempoala", "Apan", "Mixquiahuala de Juárez", "Santiago Tulantepec de Lugo Guerrero", "Huichapan", "San Salvador", "Francisco I. Madero", "Zimapán"],
+    "Jalisco": ["Guadalajara", "Zapopan", "Tlaquepaque", "Tonalá", "Tlajomulco de Zúñiga", "Puerto Vallarta", "Lagos de Moreno", "El Salto", "Tepatitlán de Morelos", "Zapotlán el Grande", "Ocotlán", "Arandas", "Tala", "San Juan de los Lagos", "La Barca", "Atotonilco el Alto", "Autlán de Navarro", "Ameca", "Zapotlanejo", "Encarnación de Díaz"],
+    "Estado de México": ["Ecatepec de Morelos", "Nezahualcóyotl", "Toluca", "Naucalpan de Juárez", "Chimalhuacán", "Tlalnepantla de Baz", "Cuautitlán Izcalli", "Tecámac", "Ixtapaluca", "Atizapán de Zaragoza", "Tultitlán", "Nicolás Romero", "Chalco", "Coacalco de Berriozábal", "La Paz", "Valle de Chalco Solidaridad", "Zinacantepec", "Texcoco", "Metepec", "Cuautitlán"],
+    "Michoacán": ["Morelia", "Uruapan", "Zamora", "Lázaro Cárdenas", "Zitácuaro", "Apatzingán", "Hidalgo", "La Piedad", "Pátzcuaro", "Tarímbaro", "Maravatío", "Sahuayo", "Tacámbaro", "Zacapu", "Los Reyes", "Jacona", "Puruándiro", "Múgica", "Huetamo", "Salvador Escalante"],
+    "Morelos": ["Cuernavaca", "Jiutepec", "Cuautla", "Temixco", "Emiliano Zapata", "Yautepec", "Ayala", "Xochitepec", "Jojutla", "Puente de Ixtla", "Yecapixtla", "Tepoztlán", "Tlaltizapán de Zapata", "Tlaquiltenango", "Atlatlahucan", "Tepalcingo", "Axochiapan", "Huitzilac", "Miacatlán", "Ocuituco"],
+    "Nayarit": ["Tepic", "Bahía de Banderas", "Santiago Ixcuintla", "Compostela", "Xalisco", "Rosamorada", "San Blas", "Tecuala", "Tuxpan", "Acaponeta", "Ixtlán del Río", "Ruiz", "Del Nayar", "Santa María del Oro", "Jala", "Huajicori", "Ahuacatlán", "San Pedro Lagunillas", "La Yesca", "Amatlán de Cañas"],
+    "Nuevo León": ["Monterrey", "Apodaca", "Guadalupe", "General Escobedo", "San Nicolás de los Garza", "García", "Santa Catarina", "Juárez", "San Pedro Garza García", "Cadereyta Jiménez", "Salinas Victoria", "Linares", "Montemorelos", "Pesquería", "Ciénega de Flores", "Santiago", "El Carmen", "General Zuazua", "Allende", "Sabinas Hidalgo"],
+    "Oaxaca": ["Oaxaca de Juárez", "San Juan Bautista Tuxtepec", "Juchitán de Zaragoza", "Santa Cruz Xoxocotlán", "Salina Cruz", "Heroica Ciudad de Huajuapan de León", "Santo Domingo Tehuantepec", "San Pedro Mixtepec", "Santa Lucía del Camino", "Ciudad Ixtepec", "Miahuatlán de Porfirio Díaz", "Heroica Ciudad de Tlaxiaco", "Santa María Atzompa", "San Jacinto Amilpas", "Matías Romero Avendaño", "San Antonio de la Cal", "Santiago Pinotepa Nacional", "Loma Bonita", "San Pedro Pochutla", "Ocotlán de Morelos"],
+    "Puebla": ["Puebla", "Tehuacán", "San Martín Texmelucan", "San Andrés Cholula", "Atlixco", "San Pedro Cholula", "Amozoc", "Huauchinango", "Teziutlán", "Cuautlancingo", "Zacatlán", "Xicotepec", "Tepeaca", "Izúcar de Matamoros", "Tecamachalco", "Huejotzingo", "Ajalpan", "Chignahuapan", "Zacapoaxtla", "Tlatlauquitepec"],
+    "Querétaro": ["Querétaro", "San Juan del Río", "Corregidora", "El Marqués", "Cadereyta de Montes", "Pedro Escobedo", "Colón", "Ezequiel Montes", "Tequisquiapan", "Amealco de Bonfil", "Pinal de Amoles", "Tolimán", "Huimilpan", "Jalpan de Serra", "Peñamiller", "Landa de Matamoros", "Arroyo Seco", "San Joaquín"],
+    "Quintana Roo": ["Benito Juárez", "Solidaridad", "Othón P. Blanco", "Cozumel", "Tulum", "Felipe Carrillo Puerto", "Lázaro Cárdenas", "Isla Mujeres", "Bacalar", "José María Morelos", "Puerto Morelos"],
+    "San Luis Potosí": ["San Luis Potosí", "Soledad de Graciano Sánchez", "Ciudad Valles", "Matehuala", "Rioverde", "Tamazunchale", "Mexquitic de Carmona", "Xilitla", "Ciudad Fernández", "Ébano", "Aquismón", "Matlapa", "Santa María del Río", "Villa de Reyes", "Axtla de Terrazas", "Tamuín", "Cárdenas", "Salinas", "Charcas", "Tancanhuitz"],
+    "Sinaloa": ["Culiacán", "Mazatlán", "Ahome", "Guasave", "Navolato", "Salvador Alvarado", "El Fuerte", "Sinaloa", "Escuinapa", "Rosario", "Mocorito", "Angostura", "Choix", "Elota", "Concordia", "Badiraguato", "San Ignacio", "Cosalá"],
+    "Sonora": ["Hermosillo", "Cajeme", "Nogales", "San Luis Río Colorado", "Navojoa", "Guaymas", "Agua Prieta", "Caborca", "Puerto Peñasco", "Etchojoa", "Empalme", "Huátabampo", "Cananea", "Magdalena", "Álamos", "Bácum", "Benito Juárez", "General Plutarco Elías Calles", "Nacozari de García", "Santa Ana"],
+    "Tabasco": ["Centro", "Cárdenas", "Comalcalco", "Huimanguillo", "Macuspana", "Cunduacán", "Nacajuca", "Centla", "Paraíso", "Jalpa de Méndez", "Balancán", "Tenosique", "Teapa", "Tacotalpa", "Jalapa", "Emiliano Zapata", "Jonuta"],
+    "Tamaulipas": ["Reynosa", "Matamoros", "Nuevo Laredo", "Victoria", "Tampico", "Ciudad Madero", "Altamira", "Río Bravo", "El Mante", "Valle Hermoso", "San Fernando", "González", "Gustavo Díaz Ordaz", "Camargo", "Tula", "Aldama", "Soto la Marina", "Miguel Alemán", "Xicoténcatl", "Padilla"],
+    "Tlaxcala": ["Tlaxcala", "Huamantla", "Apizaco", "San Pablo del Monte", "Chiautempan", "Calpulalpan", "Zacatelco", "Yauhquemehcan", "Contla de Juan Cuamatzi", "Tetla de la Solidaridad", "Papalotla de Xicohténcatl", "Panotla", "Ixtacuixtla de Mariano Matamoros", "Teolocholco", "Tlaxco", "Totolac", "Tepetitla de Lardizábal", "Santa Cruz Tlaxcala", "Apetatitlán de Antonio Carvajal", "Xaloztoc"],
+    "Veracruz": ["Veracruz", "Xalapa", "Coatzacoalcos", "Córdoba", "Poza Rica de Hidalgo", "Papantla", "Minatitlán", "San Andrés Tuxtla", "Tuxpan", "Boca del Río", "Orizaba", "Cosoleacaque", "Álamo Temapache", "Martínez de la Torre", "Tierra Blanca", "Pánuco", "Tihuatlán", "Coatepec", "Acayucan", "Perote"],
+    "Yucatán": ["Mérida", "Kanasín", "Valladolid", "Tizimín", "Umán", "Progreso", "Tekax", "Motul", "Ticul", "Chemax", "Hunucmá", "Oxkutzcab", "Izamal", "Peto", "Maxcanú", "Halachó", "Tecoh", "Tixkokob", "Acanceh", "Espita"],
+    "Zacatecas": ["Fresnillo", "Guadalupe", "Zacatecas", "Pinos", "Río Grande", "Sombrerete", "Loreto", "Calera", "Jerez", "Ojocaliente", "Villanueva", "Valparaíso", "Tlaltenango de Sánchez Román", "Nochistlán de Mejía", "Villa de Cos", "Jalpa", "Pánuco", "Trancoso", "General Francisco R. Murguía", "Sain Alto"]
+};
+
+// --- DATA DEL CUESTIONARIO (COMPLETA 189 PREGUNTAS) ---
+const data = {
+    "Recursos Humanos": [{
+        "contador": 1,
+        "pregunta": "¿Cuentas con un proceso documentado de contratación de conductores y monitoristas?",
+        "recomendacion": "Estándar OEA/C-TPAT. Acción: 1. Auditar el proceso actual buscando huecos de seguridad. 2. Documentar filtros obligatorios de confiabilidad. 3. El objetivo es evitar la infiltración de la delincuencia organizada en la nómina."
+    }, {
+        "contador": 2,
+        "pregunta": "¿Se tiene un perfil documentado para los operadores y monitoristas?",
+        "recomendacion": "Prevención de Colusión. Acción: 1. Definir perfil de 'Seguridad'. 2. Para monitoristas, exigir experiencia en manejo de crisis y protocolos anti-jammer. 3. Para operadores, exigir historial limpio en plataforma de la SICT."
+    }, {
+        "contador": 3,
+        "pregunta": "¿El porcentaje de rotación de operadores es MAYOR al 20% anualizado?",
+        "recomendacion": "Riesgo Crítico: Fuga de Información. Acción: 1. La alta rotación impide crear lealtad y expone rutas críticas a personal nuevo constantemente. 2. Implementar bonos de retención ligados a antigüedad y cero incidentes."
+    }, {
+        "contador": 4,
+        "pregunta": "¿El porcentaje de rotación de monitoristas es MAYOR al 20% anualizado?",
+        "recomendacion": "Vulnerabilidad del Centro de Control. Acción: 1. Un monitorista nuevo tarda 3-6 meses en conocer los 'modus operandi' delictivos. 2. Retener al personal clave para mantener la inteligencia operativa."
+    }, {
+        "contador": 5,
+        "pregunta": "¿La plantilla de operadores está cubierta al 100%?",
+        "recomendacion": "Riesgo Operativo. Acción: 1. Evitar contratar 'de urgencia' saltándose filtros de seguridad. 2. Mantener siempre una reserva de candidatos ya validados (estudios y referencias completas)."
+    }, {
+        "contador": 6,
+        "pregunta": "¿La plantilla de monitoristas está cubierta al 100%?",
+        "recomendacion": "Ceguera de Taller. Acción: 1. La falta de personal provoca fatiga visual y omisión de alertas de pánico/jammer. 2. Asegurar cobertura 24/7 con turnos traslapados para la entrega de novedades sin perder vista de las unidades."
+    }, {
+        "contador": 7,
+        "pregunta": "¿La propuesta económica al operador está por encima de la media nacional?",
+        "recomendacion": "Mitigación de Soborno. Acción: 1. Un operador mal pagado es más susceptible a vender la carga o combustible. 2. Ofrecer sueldo competitivo como barrera de entrada a la corrupción."
+    }, {
+        "contador": 8,
+        "pregunta": "¿Se solicitan estudios socioeconómicos o visita domiciliaria a los operadores?",
+        "recomendacion": "Inteligencia Preventiva. Acción: 1. Verificar coincidencia del nivel de vida con los ingresos declarados. 2. Detectar signos de endeudamiento excesivo que puedan motivar el autorrobo."
+    }, {
+        "contador": 9,
+        "pregunta": "¿Se solicitan estudios socioeconómicos o visita domiciliaria a los monitoristas?",
+        "recomendacion": "Seguridad Interna. Acción: 1. El monitorista tiene las llaves digitales de la flota. 2. Realizar visitas sorpresivas anuales para validar estabilidad y entorno familiar (blindaje contra extorsión)."
+    }, {
+        "contador": 10,
+        "pregunta": "¿Se firma un contrato de confidencialidad para ambos perfiles?",
+        "recomendacion": "Marco Legal. Acción: 1. Incluir cláusulas penales por divulgación de rutas, clientes y valores de carga. 2. Usar este documento como disuasivo legal desde el día uno."
+    }, {
+        "contador": 11,
+        "pregunta": "¿Se firma un código de ética para ambos perfiles?",
+        "recomendacion": "Cultura de Legalidad. Acción: 1. Definir postura ante 'huachicol', paradas no autorizadas y dádivas. 2. Establecer canal de denuncia anónima para reportar compañeros sospechosos."
+    }, {
+        "contador": 12,
+        "pregunta": "¿Se realiza evaluación periódica de control de confianza para ambos perfiles?",
+        "recomendacion": "Mejor Práctica del Sector. Acción: 1. Aplicar polígrafo o Vetting enfocado a: Vínculos delictivos, robo en empleos anteriores y consumo de drogas ilegales."
+    }, {
+        "contador": 13,
+        "pregunta": "¿Cuentan con área de servicio médico?",
+        "recomendacion": "Prevención de Accidentes/Robo. Acción: 1. Un conductor enfermo se detendrá en ruta, exponiéndose al robo. 2. Validar estado físico antes de cada viaje crítico."
+    }, {
+        "contador": 14,
+        "pregunta": "¿Realizan pruebas de antidopaje antes de la contratación para ambos perfiles?",
+        "recomendacion": "Filtro de Seguridad. Acción: 1. Cero tolerancia. 2. El consumo de drogas suele financiar grupos delictivos y genera vulnerabilidad a la coacción."
+    },  {
+        "contador": 15,
+        "pregunta": "¿Tienen un programa anual de capacitación a monitoristas en buenas prácticas ligadas al robo?",
+        "recomendacion": "Actualización Delictiva. Acción: 1. Capacitar en detección de inhibidores de señal (Jammers). 2. Taller de lectura de lenguaje corporal/voz del operador bajo amenaza."
+    }, {
+        "contador": 16,
+        "pregunta": "¿Se realiza evaluación práctica del operador antes de firmar contrato?",
+        "recomendacion": "Habilidad vs Riesgo. Acción: 1. Evaluar pericia para evitar maniobras lentas que expongan la unidad. 2. Evaluar hábitos de manejo defensivo/evasivo (básico)."
+    }, {
+        "contador": 17,
+        "pregunta": "¿El proceso de inducción incluye los protocolos de seguridad en conjunto con monitoreo?",
+        "recomendacion": "Coordinación. Acción: 1. El operador debe saber que el monitorista es su 'copiloto virtual'. 2. Enseñar uso de botón de pánico (físico y en app) y códigos de emergencia."
+    }, {
+        "contador": 18,
+        "pregunta": "¿Recursos Humanos forma parte del análisis de siniestros?",
+        "recomendacion": "Investigación Interna. Acción: 1. Tras un robo, RH debe revisar el expediente: ¿Hubo cambios de comportamiento? ¿Deudas recientes? 2. Descartar complicidad interna."
+    }, {
+        "contador": 19,
+        "pregunta": "¿Se realiza una investigación de antecedentes laborales según ley a todo el personal?",
+        "recomendacion": "Traçabilidad. Acción: 1. Verificar 'huecos' en la historia laboral (tiempos no comprobables). 2. Validar referencias con jefes directos, no solo con amigos."
+    }, {
+        "contador": 20,
+        "pregunta": "¿Se realiza una investigación de antecedentes penales, según la ley a todo el personal?",
+        "recomendacion": "Seguridad Patrimonial. Acción: 1. Consultar listas de incidencias legales (Boletín Laboral/Buro Legal). 2. Asegurar que no existan procesos abiertos por robo o abuso de confianza."
+    }, {
+        "contador": 21,
+        "pregunta": "¿RH participa activamente en el diseño y seguimiento del plan anual de capacitación junto con los líderes de área?",
+        "recomendacion": "Formación Continua. Acción: 1. Incluir módulo de 'Seguridad Patrimonial en Carretera' obligatorio semestralmente. 2. Documentar asistencia para auditorías de seguros."
+    }, {
+        "contador": 22,
+        "pregunta": "¿Se mantiene un expediente completo y actualizado por cada empleado con su historial de incidencias y capacitaciones?",
+        "recomendacion": "Evidencia Legal. Acción: 1. Registrar cada incidencia menor (desvíos, paradas injustificadas). 2. Un patrón de faltas menores suele preceder a un evento de robo mayor."
+    }, {
+        "contador": 23,
+        "pregunta": "¿Existen políticas de 'cero tolerancia' claramente definidas y comunicadas?",
+        "recomendacion": "Disuasión. Acción: 1. Comunicar que cualquier parada no autorizada o desconexión de GPS es motivo de rescisión inmediata y posible investigación legal."
+    }, {
+        "contador": 24,
+        "pregunta": "¿Se promueve un esquema de bonos o incentivos ligado a métricas de desempeño?",
+        "recomendacion": "Alineación de Intereses. Acción: 1. Bono por cumplimiento de protocolo de seguridad (ej. no paradas prohibidas). 2. Incentivar la denuncia de situaciones de riesgo."
+    }, {
+        "contador": 25,
+        "pregunta": "¿Concilias que el comprobante de domicilio sea el mismo de su identificación oficial?",
+        "recomendacion": "Ubicabilidad. Acción: 1. Es vital saber dónde localizar al colaborador y su familia en caso de una investigación por desaparición de carga (autorrobo)."
+    }, {
+        "contador": 26,
+        "pregunta": "¿Se ha validado la autenticidad de la licencia del conductor en los portales oficiales?",
+        "recomendacion": "Validación SICT. Acción: 1. Licencia falsa = Operador no confiable. 2. Verificar estatus en la base de datos de Medicina Preventiva en el Transporte."
+    }],
+
+    "Seguridad Vial": [{
+        "contador": 27,
+        "pregunta": "¿Se cuenta con una politica definida de 0 tolerancia ante omisiones durante la ruta?",
+        "recomendacion": "Disciplina Operativa. Acción: 1. Establecer que omitir un reporte de parada o cambio de ruta se trata como una 'Pre-alerta de Robo'. 2. Activar protocolo de búsqueda inmediato."
+    }, {
+        "contador": 28,
+        "pregunta": "¿Está firmada la declaración de la política por el personal directivo?",
+        "recomendacion": "Respaldo Institucional. Acción: 1. La seguridad no es negociable. 2. La firma de dirección autoriza a monitoreo a detener unidades que violen protocolos sin importar la urgencia comercial."
+    }, {
+        "contador": 29,
+        "pregunta": "¿La política indica que el uso de aparatos electronicos es exclusivo para el uso de comunicación interna?",
+        "recomendacion": "Control de Información. Acción: 1. Evitar que el operador informe su posición en tiempo real a terceros vía redes sociales/WhatsApp personal. 2. Restringir fuga de datos."
+    }, {
+        "contador": 30,
+        "pregunta": "¿La política incluye el esquema de 0 tolerancia para conductores que conducen en estado inconveniente?",
+        "recomendacion": "Vulnerabilidad. Acción: 1. Un conductor intoxicado es presa fácil para la delincuencia. 2. Implementar alcoholímetro al inicio de ruta y en pernoctas."
+    }, {
+        "contador": 31,
+        "pregunta": "¿Las políticas de manejo cumplen y apoyan las leyes estatales y locales?",
+        "recomendacion": "Prevención de Detenciones. Acción: 1. Evitar infracciones de tránsito que obliguen a detener la unidad, creando una ventana de oportunidad para el asalto."
+    }, {
+        "contador": 32,
+        "pregunta": "¿Se revisa la política y el programa de seguridad de manejo al menos una vez al año?",
+        "recomendacion": "Actualización de Riesgos. Acción: 1. Ajustar políticas según los nuevos mapas de calor delictivos (ej. nuevas zonas de asalto en el Bajío o Arco Norte)."
+    }, {
+        "contador": 33,
+        "pregunta": "¿Se realizan pruebas de droga o alcohol a empleados involucrados en incidentes vehiculares, si la ley lo permite o requiere?",
+        "recomendacion": "Investigación Forense. Acción: 1. Descartar que el 'accidente' haya sido provocado o simulado bajo influencia para facilitar un robo o saqueo."
+    }, {
+        "contador": 34,
+        "pregunta": "¿Se utiliza un formato o check list de inspección previa al viaje para los vehículos?",
+        "recomendacion": "NOM-068-SCT-2-2014. Acción: 1. Prevenir fallas mecánicas. 2. Una unidad averiada en carretera es el blanco número uno de las bandas de robo de carga."
+    }, {
+        "contador": 35,
+        "pregunta": "¿Existen horarios de restricción para transitar en rutas de riesgo?",
+        "recomendacion": "Estrategia de Horarios. Acción: 1. Cruzar zonas rojas (Puebla, Veracruz, Edomex) solo con luz de día (06:00 - 18:00). 2. Planear logística para pernoctar antes de entrar a zona de riesgo."
+    }, {
+        "contador": 36,
+        "pregunta": "¿Los operadores tienen equipos celulares proporcionados por la empresa?",
+        "recomendacion": "Canal Seguro. Acción: 1. Usar celular con GPS y aplicaciones corporativas (MDM). 2. El celular personal es un vector de ataque (ingeniería social/extorsión)."
+    }, {
+        "contador": 37,
+        "pregunta": "¿Se proporciona un apoyo para la contratación de línea celular personal para uso laboral?",
+        "recomendacion": "Riesgo: Si usan su línea, pierdes el control de la comunicación. Recomendación: Proveer SIM de datos corporativa exclusiva para la app de rastreo/comunicación."
+    }, {
+        "contador": 38,
+        "pregunta": "¿Cuentas con alguna política de seguridad en ruta formalmente documentada?",
+        "recomendacion": "Protocolo de Viaje. Acción: 1. Definir: 'Prohibido levantar autostopistas'. 2. 'Prohibido abrir puertas a supuestas autoridades en lugares desolados (llamar a 911/088 primero)'."
+    }, {
+        "contador": 39,
+        "pregunta": "¿Se cuenta con un comité de seguridad?",
+        "recomendacion": "Gobernanza. Acción: 1. Reunión mensual Dirección-Operaciones-Seguridad. 2. Revisar intentos de robo, zonas de ataque y efectividad de las custodias."
+    }, {
+        "contador": 40,
+        "pregunta": "¿Cuentas con personal de vigilancia externo en tus instalaciones?",
+        "recomendacion": "Seguridad Intramuros. Acción: 1. Proteger el patio de maniobras. 2. Revisar que no se introduzcan armas o drogas. 3. Validar que las unidades salgan con sellos de seguridad intactos."
+    }, {
+        "contador": 41,
+        "pregunta": "¿Cuentas con un proceso formal de análisis de riesgo para las rutas?",
+        "recomendacion": "Gerenciamiento de Viajes. Acción: 1. Asignar nivel de riesgo a cada viaje (Bajo, Medio, Crítico). 2. Asignar medidas acorde (GPS portátil, Custodia Virtual o Custodia Armada)."
+    }, {
+        "contador": 42,
+        "pregunta": "¿Se cuenta con alguna política de sanciones documentada y comunicada?",
+        "recomendacion": "Consecuencias. Acción: 1. Sancionar paradas injustificadas. 2. Sancionar desconexión de equipos de telemetría. 3. El mensaje debe ser: 'La seguridad no es opcional'."
+    }, {
+        "contador": 43,
+        "pregunta": "¿Se cuenta con un catálogo documentado de paradas autorizadas?",
+        "recomendacion": "Geocercas Positivas. Acción: 1. Mapear paraderos seguros, gasolineras certificadas y bases propias. 2. Configurar alertas GPS si se detienen fuera de estos puntos."
+    }, {
+        "contador": 44,
+        "pregunta": "¿Se consideran los criterios de la NOM-087 para identificar paradas autorizadas?",
+        "recomendacion": "Fatiga vs Seguridad. Acción: 1. Planear las pausas de descanso (NOM-087) EXCLUSIVAMENTE en lugares con vigilancia, cercado e iluminación. Nunca en acotamiento."
+    }, {
+        "contador": 45,
+        "pregunta": "¿Se consideran los paraderos seguros de acuerdo con la SCT?",
+        "recomendacion": "Validación. Acción: 1. Usar la app 'Parador Seguro' de la SCT/Guardia Nacional. 2. Validar que tengan señal celular para que el operador no quede incomunicado."
+    }, {
+        "contador": 46,
+        "pregunta": "¿Se tiene alguna restricción para detenerse antes de cierta cantidad de kilómetros recorridos?",
+        "recomendacion": "Regla de Oro. Acción: 1. Implementar 'Cero paradas' en los primeros 200km. 2. Estadísticamente, muchos robos ocurren saliendo del origen por 'pitazos' (halconeo)."
+    }, {
+        "contador": 47,
+        "pregunta": "¿Se tiene un catálogo documentado de zonas de alto riesgo de robo?",
+        "recomendacion": "Inteligencia. Acción: 1. Actualizar mapas con datos de AMIS/ANERPV. 2. Alertar al operador vía voz/texto 10km antes de entrar a una zona de alto índice delictivo."
+    }, {
+        "contador": 48,
+        "pregunta": "¿Existe un procedimiento definido de seguimiento cuando ocurre un robo?",
+        "recomendacion": "Protocolo de Crisis. Acción: 1. Confirmar evento. 2. Inmovilizar unidad (Paro Motor). 3. Llamar al 911/088 con coordenadas. 4. Enviar abogado/ajustador al MP."
+    }, {
+        "contador": 49,
+        "pregunta": "¿Se tienen contactos directos con entidades de seguridad para solicitar apoyo en caso de robo?",
+        "recomendacion": "Enlace Policial. Acción: 1. Registrarse en C5/C4 locales. 2. Participar en chats de seguridad regionales. 3. Tener números directos de comandancias de Guardia Nacional."
+    }, {
+        "contador": 50,
+        "pregunta": "¿Se tiene un control de horas de conducción de acuerdo a la NOM-087?",
+        "recomendacion": "NOM-087-SCT-2-2017. Acción: 1. Evitar que la fatiga obligue al operador a detenerse de emergencia en un lugar inseguro donde sea asaltado."
+    }, {
+        "contador": 51,
+        "pregunta": "¿Se tiene una restricción para la detención antes de los 300 km recorridos?",
+        "recomendacion": "Blindaje de Salida. Acción: 1. Asegurar combustible suficiente antes de cargar. 2. El objetivo es salir rápido de la zona de influencia de los informantes locales."
+    }, {
+        "contador": 52,
+        "pregunta": "¿Se tiene un control de incidencias efectuadas durante la ruta?",
+        "recomendacion": "Bitácora de Riesgos. Acción: 1. Documentar cada incidencia. 2. Si una ruta presenta constantes intentos de detención o bloqueos, cambiar la logística de inmediato."
+    },
+    {
+        "contador": 53,
+        "pregunta": "¿Cuentas con un proveedor local de recuperación diferente a Quálitas?",
+        "recomendacion": "--", "informativa": true
+    },
+    {
+        "contador": 54,
+        "pregunta": "¿Con qué frecuencia utilizas su servicio?",
+        "recomendación": "--", "informativa": true
+    }],
+
+    "Monitoreo": [{
+        "contador": 55,
+        "pregunta": "¿La asignación de viajes a operadores es aleatoria o están dedicados a clientes específicos?",
+        "recomendacion": "Contra-Inteligencia. Acción: 1. Evitar patrones. 2. Asignar viajes con la menor antelación posible (2-4 horas) para evitar que la información del viaje se filtre."
+    }, {
+        "contador": 56,
+        "pregunta": "¿Cuentan con algún procedimiento de simulacros de seguridad operativa en monitoreo?",
+        "recomendacion": "Entrenamiento Activo. Acción: 1. Simular robo en proceso sin previo aviso al monitorista. 2. Evaluar si ejecuta el paro de motor y llamada a autoridades en < 3 minutos."
+    }, {
+        "contador": 57,
+        "pregunta": "¿Cuentan con un procedimiento documentado para el monitoreo de unidades?",
+        "recomendacion": "Estandarización ISO. Acción: 1. Documentar el 'Script' de monitoreo. 2. Definir códigos de colores (Verde: Ruta, Amarillo: Parada autorizada, Rojo: Alerta/Sin señal)."
+    }, {
+        "contador": 58,
+        "pregunta": "¿Todas las unidades cuentan con GPS?",
+        "recomendacion": "Visibilidad Total. Acción: 1. No despachar ninguna unidad (propia o tercera) sin rastreo. 2. El GPS es la herramienta base de recuperación ante robo."
+    }, {
+        "contador": 59,
+        "pregunta": "¿El GPS cuenta con periféricos adicionales (sensores, paro de motor, etc.)?",
+        "recomendacion": "Capas de Seguridad. Acción: 1. El GPS solo ubica. 2. Instalar paro de motor (reacción), botón de pánico (alerta) y chapas electromecánicas (blindaje de carga)."
+    }, {
+        "contador": 60,
+        "pregunta": "¿El monitoreo es realizado por personal interno o es un servicio externo? Es recomendable el monitoreo externo para evitar relaciones interpersonales",
+        "recomendacion": "Minimizar Complicidad. Acción: 1. El monitoreo externo ('Espejo') reduce el riesgo de amistad/colusión entre chofer y monitorista. 2. Recomendado para carga de alto valor."
+    }, {
+        "contador": 61,
+        "pregunta": "¿Se tiene definido el tipo de monitoreo que se realiza (activo, por excepción, etc.)?",
+        "recomendacion": "Nivel de Servicio. Acción: 1. Carga Alta: Monitoreo dedicado (ojos en pantalla). 2. Carga General: Monitoreo por excepción (reacción a alertas automatizadas)."
+    }, {
+        "contador": 62,
+        "pregunta": "¿Se utilizan vehículos de terceros (permisionarios) en la operación? lo recomendable es que los vehiculos sean propios",
+        "recomendacion": "Riesgo Extendido. Acción: 1. Si usa terceros, exigir instalación de GPS portátil propio de la empresa para no depender del proveedor. 2. Validar sus seguros y fianzas."
+    }, {
+        "contador": 63,
+        "pregunta": "¿Se conoce el porcentaje de funcionalidad de los dispositivos GPS de la flota?",
+        "recomendacion": "Disponibilidad Tecnológica. Acción: 1. Mantener >98% de equipos reportando. 2. Equipo sin reportar = Unidad no disponible para viaje. 3. Auditar antenas y cableado vs sabotaje."
+    }, {
+        "contador": 64,
+        "pregunta": "¿Se realizan pruebas de funcionamiento de GPS previo a la salida de unidades?",
+        "recomendacion": "Check Pre-Zarpe. Acción: 1. Verificar: Ubicación actual, transmisión de datos, funcionamiento de paro de motor y audio en cabina antes de cruzar la caseta de salida."
+    }, {
+        "contador": 65,
+        "pregunta": "¿Cuentan con un dispositivo secundario que te confirme la posición en caso de perdida de señal?",
+        "recomendacion": "Redundancia Anti-Jammer. Acción: 1. Instalar GPS de respaldo oculto (Backup). 2. Usar tecnología de Radiofrecuencia (RF) o Sigfox, que son más resistentes a los jammers celulares."
+    }, {
+        "contador": 66,
+        "pregunta": "¿Cada cuanto se actualizan las contraseñas de las plataformas?",
+        "recomendacion": "Ciberseguridad. Acción: 1. Política de cambio trimestral. 2. No usar cuentas genéricas (ej. 'monitor1'). 3. Trazabilidad: saber quién consultó la ubicación de la unidad robada."
+    }, {
+        "contador": 67,
+        "pregunta": "¿Cada cuanto se depuran las plataformas de watsapp para el control de usuarios?",
+        "recomendacion": "Fuga de Datos. Acción: 1. Eliminar a ex-empleados de los grupos de WhatsApp en el minuto exacto de su baja. 2. Auditar miembros de grupos semanalmente."
+    }, {
+        "contador": 68,
+        "pregunta": "¿Hay un protocolo de actuación ante la confirmación o sospecha de robo?",
+        "recomendacion": "Cadena de Reacción. Acción: 1. Confirmar evento (pérdida señal > 15 min en zona riesgo). 2. Enviar comando paro de motor. 3. Notificar a reacción (policía). 4. Avisar a cliente."
+    }, {
+        "contador": 69,
+        "pregunta": "¿Los monitoristas reciben cursos de capacitación de forma periódica?",
+        "recomendacion": "Técnicas de Rastreo. Acción: 1. Curso: 'Detección de patrones de Jamming'. 2. Curso: 'Cartografía y Geocercas'. 3. Mantenerlos actualizados sobre nuevas modalidades de robo."
+    }, {
+        "contador": 70,
+        "pregunta": "¿El monitorista conoce el protocolo de escalamiento para reportar un siniestro?",
+        "recomendacion": "Toma de Decisiones. Acción: 1. El monitorista debe tener autoridad para ejecutar el paro de motor sin pedir permiso gerencial ante una amenaza inminente."
+    }, {
+        "contador": 71,
+        "pregunta": "¿El centro de monitoreo cuenta con acceso restringido al personal ajeno al área?",
+        "recomendacion": "Zona Estéril. Acción: 1. 'Búnker': Puertas cerradas siempre. 2. Prohibido el paso a operadores (para evitar familiaridad o intimidación). 3. Control de acceso biométrico."
+    }, {
+        "contador": 72,
+        "pregunta": "¿El personal de monitoreo tiene prohibido el uso de teléfono personal dentro de su área de trabajo?",
+        "recomendacion": "Prevención de Filtraciones. Acción: 1. Dejar celulares en lockers. 2. Evita que tomen fotos a las pantallas con ubicaciones de unidades de alto valor."
+    }, {
+        "contador": 73,
+        "pregunta": "¿La plataforma de rastreo cuenta con alertas automáticas por excepción (desvíos, paradas, etc.)?",
+        "recomendacion": "Automatización. Acción: 1. Configurar Geocerca de Ruta (Corredor). 2. Alerta inmediata por: Salida de ruta, Parada no autorizada, Apertura de puertas en tránsito."
+    }, {
+        "contador": 74,
+        "pregunta": "¿Se tienen identificadas en la plataforma las zonas de baja o nula cobertura celular/satelital?",
+        "recomendacion": "Falsos Positivos. Acción: 1. Mapear 'Zonas Obscuras'. 2. Si la unidad deja de transmitir ahí, esperar tiempo de cruce calculado. 3. Si excede tiempo = Alerta Roja."
+    }, {
+        "contador": 75,
+        "pregunta": "¿Existe un proceso a seguir antes de que las unidades entren en zonas de no cobertura?",
+        "recomendacion": "Protocolo Preventivo. Acción: 1. Operador avisa entrada a zona sin señal. 2. Monitoreo da seguimiento cronometrado. 3. Validar salida al otro extremo."
+    }, {
+        "contador": 76,
+        "pregunta": "¿Existe un protocolo de actuación en temas de fallas mecánicas reportadas por el operador?",
+        "recomendacion": "Validación de Evento. Acción: 1. Desconfiar de fallas en zonas rojas (posible trampa). 2. Enviar auxilio mecánico validado. 3. Si es zona crítica, solicitar custodia policial."
+    }, {
+        "contador": 77,
+        "pregunta": "¿Se valida el estatus de las unidades detenidas con la misma frecuencia que las unidades en movimiento?",
+        "recomendacion": "Riesgo Estático. Acción: 1. Unidad detenida = Unidad en Peligro. 2. Aumentar supervisión en pernoctas o paradas de comida (validar c/30 min)."
+    }, {
+        "contador": 78,
+        "pregunta": "¿Existe un procedimiento formal para la entrega de turno entre monitoristas?",
+        "recomendacion": "Continuidad Operativa. Acción: 1. Bitácora de entrega. 2. No se retira el turno saliente hasta revisar estatus de cada unidad 'en tránsito' con el entrante."
+    }],
+
+    "Logistica": [{
+        "contador": 79,
+        "pregunta": "¿Se realizan descuentos al operador por conceptos de diésel?",
+        "recomendacion": "Clima Laboral. Acción: 1. Evitar descuentos injustificados que generen resentimiento y motiven al operador a 'recuperar' dinero vendiendo carga o combustible."
+    }, {
+        "contador": 80,
+        "pregunta": "¿Existe un tiempo máximo definido para que el operador liquide un viaje?",
+        "recomendacion": "Control de Flujo. Acción: 1. Cerrar el ciclo del viaje rápido. 2. Detectar faltantes de mercancía o evidencias de manipulación de carga en las primeras 24h."
+    }, {
+        "contador": 81,
+        "pregunta": "¿Existe alguna penalización si se excede el tiempo máximo para liquidar?",
+        "recomendacion": "Disciplina Administrativa. Acción: 1. Condicionar asignación de nuevos viajes a la liquidación del anterior. 2. Mantener control documental estricto."
+    }, {
+        "contador": 82,
+        "pregunta": "¿Recibe el operador capacitación sobre los documentos necesarios para una liquidación exitosa?",
+        "recomendacion": "Protección de Documentos. Acción: 1. Instruir en el resguardo de Facturas y Cartas Porte. 2. Si roban la unidad, estos documentos son vitales para el seguro y denuncia."
+    }, {
+        "contador": 83,
+        "pregunta": "¿Se les otorga a los operadores un adelanto para los gastos de viaje?",
+        "recomendacion": "Seguridad de Efectivo. Acción: 1. Usar tarjetas electrónicas (Tag/Combustible/Viáticos). 2. Evitar que el operador cargue efectivo, reduciendo el riesgo de asalto a cabina."
+    }, {
+        "contador": 84,
+        "pregunta": "¿Son verificadas las cargas para asegurar que estén apropiadamente distribuidas y dentro de los límites de peso?",
+        "recomendacion": "NOM-012-SCT-2-2017. Acción: 1. Evitar sobrepeso que ralentice la unidad (blanco fácil en subidas). 2. Evitar multas que obliguen a detenerse en carretera."
+    }, {
+        "contador": 85,
+        "pregunta": "¿Se ha definido una meta numérica para las llegadas a tiempo (On Time)?",
+        "recomendacion": "Equilibrio Seguridad-Servicio. Acción: 1. No presionar tiempos imposibles que obliguen al operador a correr riesgos o manejar fatigado. 2. Priorizar 'Llegar Seguro' sobre 'Llegar Rápido'."
+    }]
+};
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Inicializar elementos nuevos (Requerimientos)
+    renderMercanciaCheckboxes();
+    renderServicioEstadosCheckboxes(); 
+    populateEstados();
+    
+    // 2. Inicializar tabla de siniestros con una fila vacía si no hay datos
+    const tbody = document.getElementById('siniestrosTableBody');
+    if(tbody && tbody.children.length === 0) {
+        addSiniestroRow(); 
+    }
+    
+    // 3. Inicializar funciones base del sistema original
+    renderForm(); // Renderiza las secciones 3-10 (Preguntas)
+    setupEventListeners(); // Se define en la Parte 5
+    initRadarChart();
+    updateProgress(); // Se define en la Parte 5
+    initAnimations();
+});
+
+// --- LÓGICA DE RENDERIZADO DE INTERFAZ (UI) ---
+
+// 1. (NUEVO) Renderizar Checkboxes de Estados de Servicio
+function renderServicioEstadosCheckboxes() {
+    const container = document.getElementById('estadosServicioContainer');
+    if (!container || typeof estadosConMunicipios === 'undefined') return;
+
+    const estados = Object.keys(estadosConMunicipios).sort();
+    let html = '<div class="row">';
+    
+    estados.forEach(estado => {
+        const id = `serv_${estado.replace(/ /g, '_')}`;
+        html += `
+            <div class="col-md-3 col-sm-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="estadosServicio" value="${estado}" id="${id}">
+                  <label class="form-check-label small" for="${id}">
+                    ${estado}
+                  </label>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// 2. (NUEVO) Renderizar Checkboxes de Tipo de Mercancía
+function renderMercanciaCheckboxes() {
+    const container = document.getElementById('tipoMercanciaContainer');
+    if (!container || typeof tiposDeMercancia === 'undefined') return;
+
+    let html = '<div class="row">';
+    tiposDeMercancia.forEach(tipo => {
+        const id = `mercancia_${tipo.replace(/ /g, '_')}`;
+        html += `
+            <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="tipoMercancia" value="${tipo}" id="${id}">
+                  <label class="form-check-label" for="${id}">
+                    ${tipo}
+                  </label>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// 3. Lógica de Selects (Estados y Municipios)
+function populateEstados() {
+    if (typeof estadosConMunicipios === 'undefined') return;
+    const estados = Object.keys(estadosConMunicipios).sort();
+    const selectMatriz = document.getElementById('estadoMatriz');
+    const selectUbicacion = document.getElementById('estado-input');
+    
+    // Limpiar y poner opción default
+    if(selectMatriz) selectMatriz.innerHTML = '<option value="" selected>-- Seleccione un Estado --</option>';
+    if(selectUbicacion) selectUbicacion.innerHTML = '<option value="" selected>-- Estado --</option>';
+
+    estados.forEach(estado => {
+        const option = `<option value="${estado}">${estado}</option>`;
+        if(selectMatriz) selectMatriz.insertAdjacentHTML('beforeend', option);
+        if(selectUbicacion) selectUbicacion.insertAdjacentHTML('beforeend', option);
+    });
+}
+
+function populateMunicipios(estado, municipioSelectId) {
+    const selectMunicipio = document.getElementById(municipioSelectId);
+    if(!selectMunicipio) return;
+
+    selectMunicipio.innerHTML = '';
+    
+    if (estado && typeof estadosConMunicipios !== 'undefined' && estadosConMunicipios[estado]) {
+        selectMunicipio.disabled = false;
+        selectMunicipio.innerHTML = `<option value="">-- Seleccione un Municipio --</option>`;
+        estadosConMunicipios[estado].sort().forEach(municipio => {
+            selectMunicipio.insertAdjacentHTML('beforeend', `<option value="${municipio}">${municipio}</option>`);
+        });
+    } else {
+        selectMunicipio.disabled = true;
+        const defaultText = municipioSelectId === 'municipio-input' ? '-- Municipio --' : '-- Seleccione --';
+        selectMunicipio.innerHTML = `<option value="">${defaultText}</option>`;
+    }
+}
+
+// 4. (NUEVO) Lógica de Tabla Siniestros (Agregar/Quitar Filas)
+function addSiniestroRow(tipo = '', num = '', monto = '') {
+    const tbody = document.getElementById('siniestrosTableBody');
+    if (!tbody) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <input type="text" class="form-control form-control-sm siniestro-tipo" placeholder="Ej. Colisión" value="${tipo}">
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm siniestro-num text-center" placeholder="0" value="${num}">
+        </td>
+        <td>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control siniestro-monto text-end" placeholder="0.00" value="${monto}">
+            </div>
+        </td>
+        <td class="text-center align-middle">
+            <span class="btn-remove-row" onclick="removeSiniestroRow(this)" title="Eliminar fila">&times;</span>
+        </td>
+    `;
+    tbody.appendChild(row);
+}
+
+function removeSiniestroRow(btn) {
+    const row = btn.closest('tr');
+    const tbody = document.getElementById('siniestrosTableBody');
+    // Si es la única fila, limpiar valores en vez de borrar para no dejar la tabla vacía
+    if (tbody.children.length > 1) {
+        row.remove();
+    } else {
+        row.querySelectorAll('input').forEach(input => input.value = '');
+    }
+}
+
+// 5. Gráficos y Animaciones
+function initAnimations() {
+    anime({
+        targets: '#login-box',
+        scale: [0.95, 1],
+        opacity: [0, 1],
+        duration: 600,
+        easing: 'easeOutCubic'
+    });
+}
+
+function initRadarChart() {
+    const ctx = document.getElementById('compliance-radar-chart').getContext('2d');
+    if (typeof data === 'undefined') return;
+
+    complianceChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: Object.keys(data),
+            datasets: [{
+                label: 'Nivel de Cumplimiento',
+                data: [],
+                backgroundColor: 'rgba(130, 2, 124, 0.15)',
+                borderColor: 'rgba(130, 2, 124, 1)',
+                borderWidth: 3,
+                pointBackgroundColor: function(context) {
+                    const value = context.raw;
+                    if (value >= 8) return '#20c997';
+                    if (value >= 6) return '#ffc107';
+                    if (value >= 3) return '#fd7e14';
+                    return '#dc3545';
+                },
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: true
+            }, {
+                label: 'Área de Riesgo Alto',
+                data: Object.keys(data).map(() => 6),
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                borderColor: 'rgba(255, 193, 7, 0.5)',
+                borderWidth: 1,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            }, {
+                label: 'Área de Riesgo Extremo',
+                data: Object.keys(data).map(() => 3),
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                borderColor: 'rgba(220, 53, 69, 0.5)',
+                borderWidth: 1,
+                borderDash: [3, 3],
+                pointRadius: 0,
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(0, 0, 0, 0.1)', lineWidth: 1 },
+                    grid: { 
+                        color: function(context) {
+                            if (context.tick.value === 8) return 'rgba(32, 201, 151, 0.4)';
+                            if (context.tick.value === 6) return 'rgba(255, 193, 7, 0.4)';
+                            if (context.tick.value === 3) return 'rgba(220, 53, 69, 0.4)';
+                            return 'rgba(0, 0, 0, 0.1)';
+                        },
+                        lineWidth: function(context) {
+                            if ([3, 6, 8].includes(context.tick.value)) return 2;
+                            return 1;
+                        }
+                    },
+                    pointLabels: { 
+                        font: { size: 11, weight: '600' },
+                        color: '#2c3e50'
+                    },
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: { 
+                        stepSize: 2, 
+                        backdropColor: 'rgba(255, 255, 255, 0.9)', 
+                        color: '#666',
+                        font: { size: 10 }
+                    }
+                }
+            },
+            maintainAspectRatio: true,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            let riskLevel = 'EXTREMO';
+                            if (value >= 8) riskLevel = 'BAJO';
+                            else if (value >= 6) riskLevel = 'TOLERABLE';
+                            else if (value >= 3) riskLevel = 'ALTO';
+                            return `Puntuación: ${value.toFixed(1)} (${riskLevel})`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function getRiskLevel(score) {
+    if (score >= 8) return { text: 'BAJO', class: 'risk-badge-BAJO', classHtml: 'risk-bajo' };
+    if (score >= 6) return { text: 'TOLERABLE', class: 'risk-badge-TOLERABLE', classHtml: 'risk-tolerable' };
+    if (score >= 3) return { text: 'ALTO', class: 'risk-badge-ALTO', classHtml: 'risk-alto' };
+    return { text: 'EXTREMO', class: 'risk-badge-EXTREMO', classHtml: 'risk-extremo' };
+}
+
+// 6. Renderizado de Secciones Dinámicas (3-10) del Cuestionario
+function renderForm() {
+    if (typeof data === 'undefined') return;
+
+    const dynamicAccordion = document.getElementById('formulario-dinamico');
+    const navCardContainer = document.getElementById('nav-card-container');
+    let sectionCounter = 3; // Empezamos en 3 porque 1 y 2 son estáticas
+    
+    // Tarjetas de navegación iniciales (Sección 1 y 2 estáticas)
+    let navHTML = `
+        <div class="nav-card active" data-bs-target="#collapseOne"><h6>Sección 1: Antecedentes</h6></div>
+        <div class="nav-card" data-bs-target="#collapseTwo"><h6>Sección 2: Organización</h6></div>
+    `;
+    
+    dynamicAccordion.innerHTML = ''; 
+
+    Object.keys(data).forEach(area => {
+        const collapseId = `collapseSection${sectionCounter}`;
+        const areaId = area.replace(/\s+/g, '-');
+
+        // Campos de Entrevistado por sección
+        const newFieldsHTML = `
+            <div class="row g-3 mb-4 p-3 bg-light border rounded">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nombre del Entrevistado (${area})</label>
+                    <input type="text" id="entrevistado_${areaId}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Puesto</label>
+                    <input type="text" id="puesto_${areaId}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Antigüedad</label>
+                    <input type="text" id="antiguedad_${areaId}" class="form-control form-control-sm">
+                </div>
+            </div>
+            <hr>
+        `;
+
+        // Generación de preguntas
+        const questionsHTML = data[area].map(q => {
+            const id_base = `pregunta_${q.contador}`;
+            let inputHTML = '';
+            let recomendacionHTML = '';
+            let rowClasses = 'row align-items-center'; 
+            let labelClasses = 'col-md-8';
+
+            if (q.informativa) {
+                inputHTML = `
+                    <div class="col-12 mt-2">
+                        <textarea class="form-control" id="respuesta_${q.contador}" placeholder="Escribe la respuesta aquí..."></textarea>
+                    </div>`;
+                rowClasses = 'row'; 
+                labelClasses = 'col-12'; 
+            } else {
+                const optionsHTML = [{text: 'Sí', value: '1'}, {text: 'No', value: '0'}].map((opt, i) => 
+                    `<input type="radio" class="btn-check" name="${id_base}" id="${id_base}_opt${i}" value="${opt.value}" autocomplete="off">
+                     <label class="btn ${opt.value==='1'?'btn-outline-success':'btn-outline-danger'}" for="${id_base}_opt${i}">${opt.text}</label>`
+                ).join('');
+                
+                inputHTML = `
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">${optionsHTML}</div>
+                    </div>`;
+                
+                recomendacionHTML = `
+                    <div class="col-12 mt-3">
+                        <textarea class="form-control form-control-sm" id="recomendacion_${q.contador}" placeholder="Escribe la recomendación aquí...">${q.recomendacion || ''}</textarea>
+                    </div>`;
+            }
+
+            return `
+                <div class="pregunta unanswered" data-question-id="${q.contador}">
+                    <div class="${rowClasses}">
+                        <div class="${labelClasses}">
+                            <strong>${q.contador}. ${q.pregunta}</strong>
+                        </div>
+                        ${inputHTML}
+                        ${recomendacionHTML}
+                    </div>
+                </div>`;
+        }).join('');
+
+        // Estructura del Acordeón
+        const accordionHTML = `
+        <div class="accordion-item section-card"> 
+            <h2 class="accordion-header d-flex align-items-center">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                    <strong>Sección ${sectionCounter}: ${area}</strong>
+                </button>
+                <button type="button" 
+                        class="btn btn-sm btn-outline-secondary toggle-section-btn flex-shrink-0 me-3" 
+                        onclick="toggleSection(this, '${area}')" 
+                        title="Activar/Desactivar la sección ${area}"
+                        style="white-space: nowrap;">
+                    Desactivar
+                </button>
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">${newFieldsHTML}${questionsHTML}</div>
+            </div>
+        </div>`;
+        
+        dynamicAccordion.insertAdjacentHTML('beforeend', accordionHTML);
+
+        // Tarjeta de Navegación Lateral
+        const gradableQuestionsInSection = data[area].filter(q => !q.informativa).length;
+        navHTML += `<div class="nav-card" data-bs-target="#${collapseId}">
+            <div class="nav-card-header">
+                <h6>${area}</h6>
+                <span class="risk-badge" id="risk-level-${areaId}"></span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar-${areaId}"></div>
+            </div>
+            <div class="nav-card-info">
+                <span id="answered-count-${areaId}">0 / ${gradableQuestionsInSection}</span>
+                <span id="score-${areaId}">Puntuación: 0.0</span>
+            </div>
+        </div>`;
+        scoreCounters[areaId] = { value: 0 };
+
+        sectionCounter++;
+    });
+    navCardContainer.innerHTML = navHTML;
+}
+    
+// --- FUNCIONES DE EVENTOS Y CONTROL DE FLUJO ---
+
+function setupEventListeners() {
+    // 1. Botones de Guardado
+    const btnSave = document.getElementById('btnSaveForLater');
+    const btnFinalize = document.getElementById('btnFinalize');
+    
+    if(btnSave) btnSave.addEventListener('click', () => saveSurvey(false));
+    if(btnFinalize) btnFinalize.addEventListener('click', () => saveSurvey(true));
+
+    // 2. Listeners para Selects de Estados (Cascada Municipios)
+    const estadoMatriz = document.getElementById('estadoMatriz');
+    if(estadoMatriz) {
+        estadoMatriz.addEventListener('change', (e) => {
+            populateMunicipios(e.target.value, 'municipioMatriz');
+            checkFormCompletion();
+        });
+    }
+    
+    const estadoInput = document.getElementById('estado-input');
+    if(estadoInput) {
+        estadoInput.addEventListener('change', (e) => {
+            populateMunicipios(e.target.value, 'municipio-input');
+        });
+    }
+
+    // 3. Botones de Ubicaciones Adicionales
+    const btnAddLoc = document.getElementById('agregar-ubicacion-btn');
+    if(btnAddLoc) btnAddLoc.addEventListener('click', () => addLocation());
+    
+    const listaUbicaciones = document.getElementById('lista-ubicaciones');
+    if(listaUbicaciones) {
+        listaUbicaciones.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-close')) {
+                e.target.closest('.location-item').remove();
+                checkFormCompletion();
+            }
+        });
+    }
+
+    // 4. Listener unificado para botones "Retomar/Modificar" en AMBOS acordeones
+    const handleResumeClick = (e) => {
+        const resumeButton = e.target.closest('.resume-btn');
+        if (resumeButton) {
+            const surveyId = resumeButton.getAttribute('data-survey-id');
+            const surveyData = window.allPendingSurveys.find(s => s.SurveyID === surveyId);
+
+            if (surveyData) {
+                populateForm(surveyData);
+                
+                // Cerrar acordeones de listas
+                const bsCollapsePending = document.getElementById('collapsePending');
+                const bsCollapseCompleted = document.getElementById('collapseCompleted');
+                if(bsCollapsePending && bootstrap.Collapse.getInstance(bsCollapsePending)) bootstrap.Collapse.getInstance(bsCollapsePending).hide();
+                if(bsCollapseCompleted && bootstrap.Collapse.getInstance(bsCollapseCompleted)) bootstrap.Collapse.getInstance(bsCollapseCompleted).hide();
+                
+                // Abrir primera sección
+                const collapseOne = document.getElementById('collapseOne');
+                if(collapseOne) new bootstrap.Collapse(collapseOne, {toggle: false}).show();
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                alert('Error: Datos no encontrados en memoria local. Intente recargar la página.');
+            }
+        }
+    };
+
+    const pendingAcc = document.getElementById('pendingAccordion');
+    const completedAcc = document.getElementById('completedAccordion');
+    if(pendingAcc) pendingAcc.addEventListener('click', handleResumeClick);
+    if(completedAcc) completedAcc.addEventListener('click', handleResumeClick);
+
+    // 5. Animaciones y Control del Acordeón Principal
+    const formAccordion = document.getElementById('formAccordion');
+    if(formAccordion) {
+        formAccordion.addEventListener('show.bs.collapse', event => {
+            document.querySelectorAll('.nav-card').forEach(card => card.classList.remove('active'));
+            const navCardTarget = document.querySelector(`.nav-card[data-bs-target="#${event.target.id}"]`);
+            if (navCardTarget) navCardTarget.classList.add('active');
+            
+            const preguntas = event.target.querySelectorAll('.pregunta');
+            anime.remove(preguntas);
+            anime({
+                targets: preguntas, opacity: [0, 1], translateY: [15, 0],
+                delay: anime.stagger(40, { start: 100 }), duration: 400, easing: 'easeOutCubic'
+            });
+        });
+
+        formAccordion.addEventListener('hide.bs.collapse', event => {
+            const navCardTarget = document.querySelector(`.nav-card[data-bs-target="#${event.target.id}"]`);
+            if (navCardTarget) navCardTarget.classList.remove('active');
+        });
+    }
+
+    // 6. Listener Global de Cambios
+    const mainForm = document.getElementById('main-form');
+    if(mainForm) {
+        mainForm.addEventListener('change', (e) => {
+            updateProgress();
+            checkFormCompletion();
+        });
+        
+        mainForm.addEventListener('input', (e) => {
+            const preguntaDiv = e.target.closest('.pregunta');
+            if (preguntaDiv && e.target.value.trim() !== '') {
+                preguntaDiv.classList.remove('unanswered');
+            }
+            checkFormCompletion();
+        });
+    }
+
+    // 7. Navegación Lateral
+    const navContainer = document.getElementById('nav-card-container');
+    if(navContainer) {
+        navContainer.addEventListener('click', (e) => {
+            const navCard = e.target.closest('.nav-card');
+            if (navCard) {
+                const targetId = navCard.dataset.bsTarget;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    new bootstrap.Collapse(targetElement, { toggle: false }).show();
+                }
+            }
+        });
+    }
+
+    // 8. Inicializar Sistema de Login
+    initLoginSystem();
+}
+
+function initLoginSystem() {
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginButton = document.getElementById('login-button');
+    const mainContent = document.getElementById('main-content');
+    const registerModal = document.getElementById('register-modal');
+    
+    const handleLogin = async () => {
+        const user = document.getElementById('login-username').value.trim();
+        const pass = document.getElementById('login-password').value.trim();
+        const loginError = document.getElementById('login-error');
+        
+        if (!user || !pass) { loginError.textContent = 'Campos obligatorios.'; return; }
+        
+        loginButton.disabled = true; loginButton.textContent = 'Verificando...';
+        
+        try {
+            const response = await fetch('login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                anime({ targets: loginOverlay, opacity: 0, duration: 500, easing: 'easeOutQuad', complete: () => { loginOverlay.style.display = 'none'; } });
+                mainContent.style.display = 'block';
+                anime({ targets: mainContent, opacity: [0, 1], duration: 800 });
+                loadPendingSurveys();
+            } else {
+                loginError.textContent = result.message || 'Error de credenciales.';
+                anime({ targets: '#login-box', translateX: [0, -10, 10, 0], duration: 400 });
+                loginButton.disabled = false; loginButton.textContent = 'Ingresar';
+            }
+        } catch (error) {
+            console.warn("Backend no disponible, modo offline.");
+            anime({ targets: loginOverlay, opacity: 0, duration: 500, easing: 'easeOutQuad', complete: () => { loginOverlay.style.display = 'none'; } });
+            mainContent.style.display = 'block';
+            loadPendingSurveys();
+        }
+    };
+
+    if(loginButton) loginButton.addEventListener('click', handleLogin);
+    
+    // Registro
+    const showRegBtn = document.getElementById('show-register-button');
+    if(showRegBtn) showRegBtn.addEventListener('click', () => registerModal.style.display = 'flex');
+    const closeRegBtn = document.getElementById('close-modal-button');
+    if(closeRegBtn) closeRegBtn.addEventListener('click', () => registerModal.style.display = 'none');
+    
+    const doRegBtn = document.getElementById('register-button');
+    if(doRegBtn) doRegBtn.addEventListener('click', async () => {
+        const user = document.getElementById('register-username').value;
+        const pass = document.getElementById('register-password').value;
+        const code = document.getElementById('register-code').value;
+        try {
+            const response = await fetch('register.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass, code: code })
+            });
+            const res = await response.json();
+            if(res.success) document.getElementById('register-success').textContent = 'Usuario creado.';
+            else document.getElementById('register-error').textContent = res.message;
+        } catch(e) { document.getElementById('register-error').textContent = 'Error de conexión.'; }
+    });
+}
+
+// --- FUNCIONES AUXILIARES (VALIDACIÓN, PROGRESO, SEGURIDAD) ---
+
+function checkFormCompletion() {
+    const empresa = document.getElementById('empresaNombre');
+    const btn = document.getElementById('btnFinalize');
+    if(empresa && btn) {
+        btn.disabled = (empresa.value.trim().length === 0);
+    }
+}
+
+function checkQuestionAnswered(q) {
+    let answered = false;
+    const preguntaDiv = document.querySelector(`.pregunta[data-question-id="${q.contador}"]`);
+    if (!preguntaDiv) return true;
+
+    if (q.informativa) {
+        const el = document.getElementById(`respuesta_${q.contador}`);
+        if (el && el.value.trim() !== '') answered = true;
+    } else {
+        const el = document.querySelector(`input[name="pregunta_${q.contador}"]:checked`);
+        if (el) answered = true;
+    }
+
+    if (answered) preguntaDiv.classList.remove('unanswered');
+    else preguntaDiv.classList.add('unanswered');
+    return answered;
+}
+
+function updateProgress() {
+    const activeSectionScores = []; 
+    const chartLabels = []; 
+    const chartData = []; 
+    
+    if(typeof data === 'undefined') return;
+
+    Object.keys(data).forEach(area => {
+        const questions = data[area];
+        const areaId = area.replace(/\s+/g, '-');
+        const gradable = questions.filter(q => !q.informativa);
+        
+        let correct = 0;
+        let answered = 0;
+        
+        gradable.forEach(q => {
+            const radio = document.querySelector(`input[name="pregunta_${q.contador}"]:checked`);
+            if (radio) {
+                answered++;
+                const isInverse = [4, 58].includes(q.contador);
+                if (isInverse ? radio.value === '0' : radio.value === '1') correct++;
+            }
+        });
+
+        const score = gradable.length > 0 ? (correct / gradable.length) * 10 : 0;
+        
+        if (!currentDisabledSections.includes(area)) {
+            activeSectionScores.push(score);
+            chartLabels.push(area);
+            chartData.push(score);
+        }
+
+        const risk = getRiskLevel(score);
+        const badge = document.getElementById(`risk-level-${areaId}`);
+        if(badge) {
+            badge.textContent = risk.text;
+            badge.className = 'risk-badge ' + risk.class;
+        }
+
+        const progressEl = document.getElementById(`progress-bar-${areaId}`);
+        if(progressEl) progressEl.style.width = (gradable.length > 0 ? (answered/gradable.length)*100 : 0) + '%';
+        
+        const scoreEl = document.getElementById(`score-${areaId}`);
+        if(scoreEl) scoreEl.textContent = score.toFixed(1);
+        
+        if(scoreCounters[areaId]) scoreCounters[areaId].value = score;
+        document.getElementById(`answered-count-${areaId}`).textContent = `${answered} / ${gradable.length}`;
+    });
+
+    let generalScore = 0;
+    if (activeSectionScores.length > 0) {
+        generalScore = (activeSectionScores.reduce((a, b) => a + b, 0) / activeSectionScores.length) * 10;
+    }
+    
+    const genScoreEl = document.getElementById('general-score-value');
+    if(genScoreEl) genScoreEl.textContent = generalScore.toFixed(1) + ' / 100';
+    
+    const overallRisk = getRiskLevel(generalScore/10);
+    const overallBadge = document.getElementById('overall-risk-level');
+    if(overallBadge) {
+        overallBadge.textContent = overallRisk.text;
+        overallBadge.className = 'risk-badge ' + overallRisk.class;
+    }
+
+    if (complianceChart) {
+        complianceChart.data.labels = chartLabels;
+        complianceChart.data.datasets[0].data = chartData;
+        // Actualizar las líneas de referencia de riesgo
+        complianceChart.data.datasets[1].data = chartLabels.map(() => 6);
+        complianceChart.data.datasets[2].data = chartLabels.map(() => 3);
+        complianceChart.update();
+    }
+}
+
+function toggleSection(buttonEl, sectionName) {
+    const sectionCard = buttonEl.closest('.section-card'); 
+    const index = currentDisabledSections.indexOf(sectionName);
+
+    if (index > -1) {
+        currentDisabledSections.splice(index, 1); // Activar
+    } else {
+        currentDisabledSections.push(sectionName); // Desactivar
+    }
+    updateSectionToggleUI();
+    updateProgress(); 
+    checkFormCompletion();
+}
+
+function updateSectionToggleUI() {
+    document.querySelectorAll('.toggle-section-btn').forEach(buttonEl => {
+        const onclickAttr = buttonEl.getAttribute('onclick');
+        if(!onclickAttr) return;
+        const sectionName = onclickAttr.split("'")[1]; 
+        const sectionCard = buttonEl.closest('.section-card');
+
+        if (currentDisabledSections.includes(sectionName)) {
+            sectionCard.classList.add('disabled');
+            buttonEl.textContent = 'Activar';
+            buttonEl.classList.add('btn-success');
+            buttonEl.classList.remove('btn-outline-secondary');
+        } else {
+            sectionCard.classList.remove('disabled');
+            buttonEl.textContent = 'Desactivar';
+            buttonEl.classList.remove('btn-outline-secondary');
+            buttonEl.classList.add('btn-success'); // Verde para indicar que se puede desactivar? O mejor gris
+            // Ajuste visual: Mejor volver a outline-secondary
+            buttonEl.classList.add('btn-outline-secondary');
+            buttonEl.classList.remove('btn-success');
+        }
+    });
+}
+
+// --- FUNCIONES DE RECOLECCIÓN Y REPORTE ---
+
+function getAnalisisMercancia(tiposSeleccionados) {
+    const tipos = tiposSeleccionados.map(t => t.toLowerCase());
+    const hasMiscelaneos = tipos.some(t => t.includes("misceláneos") || t.includes("miscelaneos"));
+    const hasElectronicos = tipos.some(t => t.includes("electrónicos") || t.includes("electronicos"));
+    const hasMetales = tipos.some(t => t.includes("metales"));
+    const hasAuto = tipos.some(t => t.includes("auto") || t.includes("partes"));
+    const hasAlimentos = tipos.some(t => t.includes("alimentos"));
+
+    let analisis = "";
+
+    if (hasMiscelaneos || hasElectronicos || hasMetales || hasAuto || hasAlimentos) {
+        analisis += `
+        <p>En base al tipo de carga movilizada, se referencia que los productos más robados en el tercer trimestre 2025 fueron <strong>Alimentos & Bebidas (25%)</strong>, <strong>Auto & Partes (12%)</strong> y <strong>Misceláneos (10%)</strong>.</p>
+        <p>Al comparar los cambios porcentuales en la distribución de los robos por tipo de producto con relación al tercer trimestre 2024 se detectó que los incrementos más significativos correspondieron a las categorías Misceláneos, Electrónicos y Metales.</p>`;
+
+        if (hasMiscelaneos) {
+            analisis += `<p>• <strong>Misceláneos:</strong> La categoría aumentó cuatro puntos porcentuales, siendo el principal objetivo de los delincuentes las cargas mixtas como paquetería o mercancía de venta en línea.</p>`;
+        }
+        if (hasElectronicos) {
+            analisis += `<p>• <strong>Electrónicos:</strong> Incrementó dos puntos porcentuales, siendo equipos de cómputo, televisores, celulares y consolas de juegos los más robados.</p>`;
+        }
+        if (hasMetales) {
+            analisis += `<p>• <strong>Metales:</strong> Aumentó dos puntos porcentuales, siendo de los productos más robados acero, aluminio y cobre.</p>`;
+        }
+    } else {
+        analisis = `<p>Los tipos de carga movilizadas presentan un riesgo de robo aproximado del 1% al 5%, lo cual no representa una desviación crítica, aunque se recomienda mantener protocolos estándar.</p>`;
+    }
+    return analisis;
+}
+
+function collectAllData() {
+    // 1. Mercancía
+    const mercanciaSeleccionada = [];
+    document.querySelectorAll('input[name="tipoMercancia"]:checked').forEach(c => mercanciaSeleccionada.push(c.value));
+    const otroMerc = document.getElementById('tipoMercanciaOtro').value.trim();
+    if (otroMerc) mercanciaSeleccionada.push(`Otro: ${otroMerc}`);
+
+    // 2. Estados Servicio
+    const estadosServicio = [];
+    document.querySelectorAll('input[name="estadosServicio"]:checked').forEach(c => estadosServicio.push(c.value));
+
+    // 3. Tabla Siniestros
+    const tablaSiniestros = [];
+    document.querySelectorAll('#siniestrosTableBody tr').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if(inputs.length >= 3) {
+            const tipo = inputs[0].value.trim();
+            const num = inputs[1].value.trim();
+            const monto = inputs[2].value.trim();
+            if(tipo || num || monto) tablaSiniestros.push({ tipo, num, monto });
+        }
+    });
+
+    const datos = {
+        empresa: document.getElementById('empresaNombre').value.trim(),
+        descripcionEmpresa: document.getElementById('descripcionEmpresa').value.trim(), 
+        fechaEntrevista: document.getElementById('fechaEntrevista').value.trim(),
+        certificaciones: document.getElementById('certificacion').value.trim(),
+        principalesClientes: document.getElementById('principalesClientes').value.trim(),
+        tipoMercancia: mercanciaSeleccionada.join(', '),
+        tipoMercanciaArray: mercanciaSeleccionada,
+        
+        estadosServicio: estadosServicio.join(', '), 
+        estadosServicioArray: estadosServicio,
+        
+        numConductores: document.getElementById('numConductores').value,
+        numTalleres: document.getElementById('numTalleres').value,
+        kmRecorridosMes: document.getElementById('kmRecorridosMes').value,
+        viajesAnio: document.getElementById('viajesAnio').value,
+        lesionadosMes: document.getElementById('lesionadosMes').value,
+        lesionadosAnio: document.getElementById('lesionadosAnio').value,
+        muertosMes: document.getElementById('muertosMes').value,
+        muertosAnio: document.getElementById('muertosAnio').value,
+
+        estadoMatriz: document.getElementById('estadoMatriz').value,
+        municipioMatriz: document.getElementById('municipioMatriz').value,
+        ubicacionesAdicionales: Array.from(document.querySelectorAll('.location-item')).map(item => `${item.dataset.sucursal} (${item.dataset.municipio}, ${item.dataset.estado})`).join(' | '),
+
+        // Siniestralidad
+        fechaConsultaSiniestralidad: document.getElementById('fechaConsultaSiniestralidad').value,
+        frecuenciaSiniestralidad: document.getElementById('frecuenciaSiniestralidad').value,
+        severidadSiniestralidad: document.getElementById('severidadSiniestralidad').value,
+        tablaSiniestros: tablaSiniestros,
+
+        respuestasCuestionario: [],
+        seccionesInfo: {},
+        disabledSections: currentDisabledSections 
+    };
+
+    // Recoger Entrevistados
+    if(typeof data !== 'undefined') {
+        Object.keys(data).forEach(area => {
+            const areaId = area.replace(/\s+/g, '-');
+            datos.seccionesInfo[area] = {
+                entrevistado: document.getElementById(`entrevistado_${areaId}`)?.value.trim() || '',
+                puesto: document.getElementById(`puesto_${areaId}`)?.value.trim() || '',
+                antiguedad: document.getElementById(`antiguedad_${areaId}`)?.value.trim() || ''
+            };
+        });
+
+        // Recoger Preguntas
+        Object.values(data).flat().forEach(q => {
+            let resp = '';
+            if (q.informativa) {
+                const el = document.getElementById(`respuesta_${q.contador}`);
+                if(el) resp = el.value.trim();
+            } else {
+                const el = document.querySelector(`input[name="pregunta_${q.contador}"]:checked`);
+                if(el) resp = el.value;
+            }
+            const recEl = document.getElementById(`recomendacion_${q.contador}`);
+            const rec = recEl ? recEl.value.trim() : '';
+            
+            datos.respuestasCuestionario.push({
+                contador: q.contador, pregunta: q.pregunta, respuesta: resp,
+                recomendacion: rec || q.recomendacion || ''
+            });
+        });
+    }
+    return datos;
+}
+
+
+
+
+function generateReport(formData, scores, generalScore) {
+    const { jsPDF } = window.jspdf;
+    
+    const empresa = formData.empresa || 'Empresa';
+    const descEmpresa = formData.descripcionEmpresa || 'No descrita.';
+    
+    // Corregir fecha
+    let fechaEntrevista = 'S/F';
+    if(formData.fechaEntrevista && formData.fechaEntrevista.includes('-')) {
+        const parts = formData.fechaEntrevista.split('-');
+        if(parts.length===3) fechaEntrevista = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    
+    const generalScoreFormatted = generalScore.toFixed(1);
+    const generalRisk = getRiskLevel(generalScore/10);
+
+    const entrevistadosList = [];
+    if(formData.seccionesInfo) {
+        Object.values(formData.seccionesInfo).forEach(inf => { if(inf.entrevistado) entrevistadosList.push(inf.entrevistado); });
+    }
+    const listaEntrevistados = entrevistadosList.length ? [...new Set(entrevistadosList)].join(', ') : 'Operativos';
+
+    const tipoMercancia = formData.tipoMercancia || 'No especificada';
+    const estadosHTML = (formData.estadosServicioArray || []).join(', ');
+    const certificaciones = formData.certificaciones || 'Sin especificar';
+    const principalesClientes = formData.principalesClientes || 'Sin especificar';
+
+    const freq = formData.frecuenciaSiniestralidad || '0';
+    const sev = formData.severidadSiniestralidad ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(formData.severidadSiniestralidad) : '$0.00';
+    
+    // Preparar HTML de tablas
+    let scoresTableHTML = '';
+    Object.keys(scores).forEach(section => {
+        if(!formData.disabledSections.includes(section)) {
+            const sc = scores[section];
+            const r = getRiskLevel(sc);
+            scoresTableHTML += `<tr><td>${section}</td><td style="text-align:center">${sc.toFixed(1)}</td><td class="risk-badge ${r.classHtml}" style="text-align:center">${r.text}</td></tr>`;
+        }
+    });
+
+    let recomendacionesHTML = '';
+    formData.respuestasCuestionario.forEach(q => {
+        if(q.respuesta === '0') { 
+            recomendacionesHTML += `<tr><td style="text-align:center">${q.contador}</td><td>${q.pregunta}</td><td>${q.recomendacion}</td></tr>`;
+        }
+    });
+    if(!recomendacionesHTML) recomendacionesHTML = '<tr><td colspan="3" style="text-align:center">No se detectaron áreas críticas.</td></tr>';
+
+    let tablaSinHTML = '';
+    if(formData.tablaSiniestros) {
+        formData.tablaSiniestros.forEach(r => {
+            const m = parseFloat(r.monto)||0;
+            const n = parseInt(r.num)||0;
+            tablaSinHTML += `<tr><td style="border-bottom:1px solid #ddd;padding:5px;">${r.tipo}</td><td style="border-bottom:1px solid #ddd;padding:5px;text-align:center">${n}</td><td style="border-bottom:1px solid #ddd;padding:5px;text-align:right">$${m.toLocaleString()}</td></tr>`;
+        });
+    }
+
+    // --- CORRECCIÓN CLAVE: CALCULAR VARIABLES ANTES DEL STRING HTML ---
+    const analisisMercancia = getAnalisisMercancia(formData.tipoMercanciaArray || []);
+
+    const container = document.createElement('div');
+    container.id = "pdf-content";
+    
+    // Inyectar HTML
+    container.innerHTML = `
+    <style>
+        :root { --color-primary: #82027C; --color-secondary: #156082; --color-accent: #00A3E0; --light-gray: #f8f9fa; --medium-gray: #e9ecef; --dark-gray: #343a40; --text-primary: #2c3e50; --text-secondary: #5a6c7d; --page-bg: #ffffff; --border-color: #dee2e6; --shadow-sm: 0 2px 4px rgba(0,0,0,0.06); --shadow-md: 0 4px 12px rgba(0,0,0,0.1); --shadow-lg: 0 8px 24px rgba(0,0,0,0.15); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-primary); background: var(--medium-gray); line-height: 1.6; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .page { width: 8.5in; min-height: 11in; padding: 0.75in; margin: 0 auto; background: var(--page-bg); box-shadow: var(--shadow-md); position: relative; display: flex; flex-direction: column; page-break-after: always; }
+        .cover-page { background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%); color: white; justify-content: space-between; text-align: center; padding: 1.5in 0.75in; }
+        .cover-page .logo-container { background: #7F8B9C; padding: 30px; border-radius: 15px; display: inline-block; margin-bottom: 60px; box-shadow: var(--shadow-lg); }
+        .cover-page img.logo { width: 220px; height: auto; }
+        .cover-page h1 { font-size: 48px; font-weight: 700; margin: 40px 0 20px; color: white; border: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); letter-spacing: 1px; }
+        .cover-page h2 { font-size: 32px; font-weight: 300; margin: 20px 0; color: rgba(255,255,255,0.95); border: none; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; backdrop-filter: blur(10px); }
+        .cover-page .metadata { margin-top: 80px; padding: 25px; background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px); }
+        .cover-page .metadata p { font-size: 16px; margin: 10px 0; color: rgba(255,255,255,0.95); }
+        h1 { color: var(--color-primary); font-size: 28px; font-weight: 700; margin: 30px 0 20px; padding-bottom: 12px; border-bottom: 3px solid var(--color-primary); }
+        h2 { color: var(--color-secondary); font-size: 24px; font-weight: 600; margin: 25px 0 15px; padding-bottom: 10px; border-bottom: 2px solid var(--color-accent); }
+        h3 { color: var(--color-primary); font-size: 18px; font-weight: 600; margin: 20px 0 12px; padding-left: 12px; border-left: 4px solid var(--color-primary); }
+        p { font-size: 13px; line-height: 1.8; margin: 12px 0; color: var(--text-primary); text-align: justify; }
+        strong { color: var(--color-primary); font-weight: 600; }
+        .disclaimer-page { background: var(--light-gray); border: 2px solid var(--border-color); border-radius: 8px; padding: 0.75in !important; }
+        .disclaimer-page h2 { color: var(--dark-gray); text-align: center; margin-bottom: 25px; font-size: 20px; }
+        .disclaimer-page p { font-size: 12px; color: var(--text-secondary); margin: 15px 0; padding: 10px 15px; background: white; border-radius: 5px; border-left: 4px solid var(--color-primary); }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; background: white; box-shadow: var(--shadow-sm); border-radius: 8px; overflow: hidden; }
+        thead { background: linear-gradient(135deg, var(--color-secondary), var(--color-primary)); }
+        th { color: white; padding: 14px 12px; text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+        tbody tr { transition: background-color 0.2s ease; }
+        tbody tr:hover { background-color: var(--light-gray); }
+        tbody tr:last-child td { border-bottom: none; }
+        .risk-table { margin: 25px 0; font-size: 11px; } 
+        .risk-table th, .risk-table td { padding: 8px 10px; } 
+        .risk-table td:first-child { font-weight: 600; font-size: 13px; }
+        .risk-extremo { background-color: #dc3545 !important; color: white !important; }
+        .risk-alto { background-color: #fd7e14 !important; color: white !important; }
+        .risk-tolerable { background-color: #ffc107 !important; color: #2c3e50 !important; }
+        .risk-bajo { background-color: #20c997 !important; color: white !important; }
+        .chart-container { width: 100%; height: 8.5in; margin: 0 auto; padding: 20px; background: white; display: flex; align-items: center; justify-content: center; }
+        #reportChartCanvas { display: none !important; } 
+        #reportChartImage { width: 100%; height: auto; max-height: 8in; }
+        .content-section { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid var(--color-accent); box-shadow: var(--shadow-sm); }
+        .recommendations-table { font-size: 14px; }
+        .recommendations-table td { vertical-align: top; padding: 12px 10px; line-height: 1.5; }
+        .recommendations-table td:first-child { font-weight: 700; color: var(--color-primary); text-align: center; background: var(--light-gray); width: 50px; }
+        .recommendations-table td:nth-child(2) { width: 35%; font-weight: 500; }
+        .recommendations-table td:nth-child(3) { width: calc(65% - 50px); }
+        .risk-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; }
+        .section-number { display: inline-block; width: 35px; height: 35px; background: var(--color-primary); color: white; border-radius: 50%; text-align: center; line-height: 35px; font-weight: 700; margin-right: 10px; font-size: 16px; }
+        .chart-page { padding: 0.5in; }
+        .chart-page h2 { text-align: center; width: 100%; margin-bottom: 5px; }
+        .chart-page .chart-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: 10px; }
+        .rec-page { min-height: auto; height: auto; }
+    </style>
+    
+    <div class="page cover-page">
+        <div>
+            <div class="logo-container">
+            <img src="PRQ.png" alt="Logo Quálitas" class="logo"></div>
+            <h1>Análisis de Riesgo</h1>
+            <h2>${empresa}</h2>
+        </div>
+        <div class="metadata"><p><strong>Fecha:</strong> ${fechaEntrevista}</p><p><strong>Elaborado por:</strong> Prevención de Riesgos Quálitas</p></div>
+    </div>
+
+    <div class="page disclaimer-page">
+        <h2> Cláusula de Confidencialidad y Uso de la Información</h2>
+        <p>Los informes elaborados por <strong>PREVENCIÓN DE RIESGOS QUÁLITAS</strong> son realizados a partir de información que es suministrada por las empresas analizadas y su propósito es brindar un diagnóstico general sobre el entorno de seguridad.</p>
+        <p>Dichos reportes no garantizan o aseguran que la empresa analizada cumple o no con las leyes o estatutos, regulaciones, etc. que enmarcan su actividad.</p>
+        <p>Las recomendaciones de mejoras descritas en los informes tienen como fin minimizar la exposición a riesgos al momento de la visita de inspección.</p>
+        <p><strong>PREVENCIÓN DE RIESGOS QUÁLITAS</strong> no garantiza que el cumplimiento total de dichas recomendaciones eliminará todos los peligros a los que está expuesta la empresa analizada.</p>
+    </div>
+
+    <div class="page">
+        <h2><span class="section-number">1</span>Introducción</h2>
+        <h3>1.1. Motivo del informe</h3>
+        <div class="content-section">
+            <p>Como parte del programa de administración de riesgos que Quálitas ofrece a nuestros asegurados, en este caso con <strong>${empresa}</strong>, se ha procedido a realizar el estudio de prevención de riesgos de sus líneas de transporte, con el propósito de determinar la exposición del equipo de transporte del asegurado.</p>
+            <p>El presente reporte cuenta con el análisis de riesgo de la empresa <strong>${empresa}</strong> a fin de evaluar la exposición a los riesgos presentes durante su proceso logístico.</p>
+            <p>Agradecemos a la empresa y alas personas que han participado en la reunion, incluyendo a: <strong>${listaEntrevistados}</strong>.</p>
+        </div>
+
+        <h3>1.2. Escala de Calificación</h3>
+        <div>
+            <p>Para un mejor análisis de riesgos, el informe comprende calificaciones que se asignaron a cada una de las variables. Lo anterior, permitirá tener una interpretación más clara sobre las variables que hacen aumentar la exposición al riesgo durante el proceso de circulación de vehículos, estos niveles de calificación son:</p>
+        </div>
+        <table class="risk-table">
+            <thead><tr><th>RIESGO</th><th>CALIFICACIÓN</th><th>%</th></tr></thead>
+            <tbody>
+                <tr><td class="risk-bajo">BAJO</td><td>8.0 - 10.0</td><td>77 - 100</td></tr>
+                <tr><td class="risk-tolerable">TOLERABLE</td><td>6.0 - 7.9</td><td>51 - 76</td></tr>
+                <tr><td class="risk-alto">ALTO</td><td>3.0 - 5.9</td><td>26 - 50</td></tr>
+                <tr><td class="risk-extremo">EXTREMO</td><td>0.0 - 2.9</td><td>0 - 25</td></tr>
+            </tbody>
+        </table>
+        <p>Posteriormente, al interrelacionar las variables estudiadas, se emitieron recomendaciones, mismas que de acuerdo con el análisis realizado se podrán considerar las más eficientes a fin de minimizar los riesgos durante el proceso de movilización de equipo pesado.</p>
+    </div>
+
+    <div class="page">
+        <h2><span class="section-number">2</span>Generalidades</h2>
+        <h3>2.1. Descripción</h3>
+        <div class="content-section"><p><strong>${empresa}</strong>: ${descEmpresa}</p></div>
+        <h3>2.2. Certificaciones</h3>
+        <div class="content-section"><p>Sobre las certificaciones, se reportó lo siguiente: <strong>${certificaciones}</p></div>
+    </div>
+
+        <h3>2.3. Descripción de las variables evaluadas</h3>
+        <p>El análisis de riesgo fue elaborado por medio de una herramienta propia de Quálitas, la cual contiene los siguientes rubros de evaluación.</p>
+        
+        <table style="font-size: 11px;">
+            <thead>
+                <tr>
+                    <th>Generalidades de la empresa</th>
+                    <th>Red Logística</th>
+                    <th>Transporte</th>
+                    <th>Seguridad de Vehículos en Tránsito</th>
+                    <th>Siniestros</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top;">
+                        • Infraestructura<br>• Sistemas<br>• Documentación<br>• Estructura Organizacional
+                    </td>
+                    <td style="vertical-align: top;">
+                        • Movilizaciones<br>• Horarios de Tránsito<br>• Corredores Viales
+                    </td>
+                    <td style="vertical-align: top;">
+                        • Flota y Parque Automotor<br>• Antigüedad de la Flota<br>• Protocolos de Contratación
+                    </td>
+                    <td style="vertical-align: top;">
+                        • Tecnología y Equipamiento<br>• Puesto de Control<br>• Paradas Autorizadas<br>• Protocolo de Reacción<br>• Monitoreo de Seguridad<br>• Control de Horas<br>• Capacitación
+                    </td>
+                    <td style="vertical-align: top;">
+                        • Frecuencia<br>• Severidad<br>• Causas<br>• Análisis de Causa Raíz<br>• Comité de Seguridad
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="page">
+        <h2><span class="section-number">3</span>Red Logística</h2>
+        <h3>3.1. Clientes</h3>
+        <div class="content-section"><p>Los principales clientes son:${principalesClientes}</p></div>
+        <h3>3.2. Mercancía</h3>
+        <div class="content-section">
+            <p>Los tipos de mercancia movilizada son:<strong>${tipoMercancia}</strong></p>
+            ${analisisMercancia}
+        </div>
+        <h3>3.3. Cobertura</h3>
+        <p>La empresa indicó tener prencencia/cobertura en los siguientes estados:${estadosHTML}</p>
+    </div>
+
+    <div class="page">
+        <h2><span class="section-number">4</span>Siniestralidad</h2>
+        <h3>4.1. Frecuencia</h3>
+        <p> Durante el analsiis se encuentra que tiene una frecuencia de:  <strong>${freq}%</strong>.</p>
+        <h3>4.2. Severidad</h3>
+        <p>Se observa una severidad con un valor de : <strong>${sev}</strong>.</p>
+        <h3>4.3. Desglose</h3>
+        <p> Desglose de siniestralidad indicando los principales siniestros sufridos.
+        <table>
+            <thead><tr><th>Tipo</th><th>Número</th><th>Monto</th></tr></thead>
+            <tbody>${tablaSinHTML}</tbody>
+        </table>
+    </div>
+
+    <div class="page">
+        <h2><span class="section-number">5</span>Resultados</h2>
+        <div class="content-section">
+            <p>Calificación General: <strong>${generalScoreFormatted} / 100</strong> — Nivel de Riesgo: <span class="risk-badge ${generalRisk.classHtml}">${generalRisk.text}</span></p>
+        </div>
+        <h3>5.1. Calificación por Área</h3>
+        <table>
+            <thead><tr><th>Área</th><th>Calificación</th><th>Riesgo</th></tr></thead>
+            <tbody>${scoresTableHTML}</tbody>
+        </table>
+    </div>
+
+    <div class="page chart-page">
+        <h2>Gráfica de Evaluación por Área</h2>
+        <p class="chart-subtitle">Representación visual del nivel de cumplimiento en cada área evaluada</p>
+        <div class="chart-container"><canvas id="pdfChartCanvas" width="800" height="800"></canvas></div>
+    </div>
+    `;
+
+    container.style.position = 'fixed'; container.style.left = '-10000px';
+    document.body.appendChild(container);
+
+    // Renderizar gráfico y luego PDF
+    setTimeout(async () => {
+        const pdf = new jsPDF('p', 'in', 'letter');
+        const pageWidth = 8.5;
+        const pageHeight = 11;
+        
+        // ============ CREAR GRÁFICA DE ALTA RESOLUCIÓN ============
+        const pdfCanvas = document.getElementById('pdfChartCanvas');
+        const pdfCtx = pdfCanvas.getContext('2d');
+        
+        // Obtener datos del gráfico existente
+        const chartLabels = complianceChart.data.labels;
+        const chartData = complianceChart.data.datasets[0].data;
+        
+        // Crear nuevo gráfico en alta resolución
+        new Chart(pdfCtx, {
+            type: 'radar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Nivel de Cumplimiento',
+                    data: chartData,
+                    backgroundColor: 'rgba(130, 2, 124, 0.2)',
+                    borderColor: 'rgba(130, 2, 124, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: chartData.map(v => {
+                        if (v >= 8) return '#20c997';
+                        if (v >= 6) return '#ffc107';
+                        if (v >= 3) return '#fd7e14';
+                        return '#dc3545';
+                    }),
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 8,
+                    fill: true
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0, 0, 0, 0.15)', lineWidth: 1 },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)', lineWidth: 1 },
+                        pointLabels: { font: { size: 14, weight: 'bold' }, color: '#2c3e50' },
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: { stepSize: 2, backdropColor: 'rgba(255, 255, 255, 0.9)', color: '#666', font: { size: 12 } }
+                    }
+                },
+                maintainAspectRatio: true,
+                plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 14 } } } },
+                animation: false
+            }
+        });
+        
+        // Esperar a que el gráfico se renderice
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // ============ RENDERIZAR PÁGINAS NORMALES ============
+        const allPages = container.querySelectorAll('.page');
+        
+        for (let i = 0; i < allPages.length; i++) {
+            if (i > 0) pdf.addPage();
+            const canvas = await html2canvas(allPages[i], { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+        }
+        
+        // ============ RENDERIZAR RECOMENDACIONES EN MÚLTIPLES PÁGINAS ============
+        const recomendaciones = formData.respuestasCuestionario.filter(q => q.respuesta === '0');
+        
+        if (recomendaciones.length > 0) {
+            const itemsPerPage = 8; // Número de recomendaciones por página
+            const totalRecsPages = Math.ceil(recomendaciones.length / itemsPerPage);
+            
+            for (let pageNum = 0; pageNum < totalRecsPages; pageNum++) {
+                pdf.addPage();
+                
+                // Crear contenedor temporal para esta página de recomendaciones
+                const recPageDiv = document.createElement('div');
+                recPageDiv.style.cssText = 'width: 8.5in; min-height: 11in; padding: 0.75in; background: white; font-family: Segoe UI, Tahoma, sans-serif;';
+                
+                // Header solo en la primera página de recomendaciones
+                let headerHTML = '';
+                if (pageNum === 0) {
+                    headerHTML = `
+                        <h2 style="color: #156082; font-size: 24px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #00A3E0;">
+                            <span style="display: inline-block; width: 35px; height: 35px; background: #82027C; color: white; border-radius: 50%; text-align: center; line-height: 35px; font-weight: 700; margin-right: 10px;">6</span>
+                            Recomendaciones
+                        </h2>
+                        <p style="margin-bottom: 20px; font-style: italic; color: #5a6c7d; font-size: 14px;">A continuación se presentan las áreas de oportunidad identificadas durante la evaluación:</p>
+                    `;
+                } else {
+                    headerHTML = `
+                        <h3 style="color: #156082; font-size: 18px; margin-bottom: 15px;">Recomendaciones (continuación - Página ${pageNum + 1})</h3>
+                    `;
+                }
+                
+                // Obtener las recomendaciones para esta página
+                const startIdx = pageNum * itemsPerPage;
+                const endIdx = Math.min(startIdx + itemsPerPage, recomendaciones.length);
+                const pageRecs = recomendaciones.slice(startIdx, endIdx);
+                
+                // Crear filas de la tabla
+                let rowsHTML = '';
+                pageRecs.forEach(q => {
+                    rowsHTML += `
+                        <tr>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; text-align: center; font-weight: 700; color: #82027C; background: #f8f9fa; width: 50px; vertical-align: top;">${q.contador}</td>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; width: 35%; font-weight: 500; vertical-align: top; font-size: 13px;">${q.pregunta}</td>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; vertical-align: top; font-size: 13px; line-height: 1.6;">${q.recomendacion}</td>
+                        </tr>
+                    `;
+                });
+                
+                recPageDiv.innerHTML = `
+                    ${headerHTML}
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.06); border-radius: 8px; overflow: hidden;">
+                        <thead style="background: linear-gradient(135deg, #156082, #82027C);">
+                            <tr>
+                                <th style="color: white; padding: 14px 10px; text-align: center; font-weight: 600; width: 50px;">N°</th>
+                                <th style="color: white; padding: 14px 10px; text-align: left; font-weight: 600; width: 35%;">Área Evaluada</th>
+                                <th style="color: white; padding: 14px 10px; text-align: left; font-weight: 600;">Recomendación</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHTML}</tbody>
+                    </table>
+                    <p style="text-align: right; margin-top: 20px; font-size: 11px; color: #999;">Página ${pageNum + 1} de ${totalRecsPages} - Recomendaciones ${startIdx + 1} a ${endIdx} de ${recomendaciones.length}</p>
+                `;
+                
+                document.body.appendChild(recPageDiv);
+                
+                const recCanvas = await html2canvas(recPageDiv, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                pdf.addImage(recCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+                
+                document.body.removeChild(recPageDiv);
+            }
+        } else {
+            // Sin recomendaciones
+            pdf.addPage();
+            const noRecDiv = document.createElement('div');
+            noRecDiv.style.cssText = 'width: 8.5in; min-height: 11in; padding: 0.75in; background: white; font-family: Segoe UI, Tahoma, sans-serif;';
+            noRecDiv.innerHTML = `
+                <h2 style="color: #156082; font-size: 24px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #00A3E0;">
+                    <span style="display: inline-block; width: 35px; height: 35px; background: #82027C; color: white; border-radius: 50%; text-align: center; line-height: 35px; font-weight: 700; margin-right: 10px;">6</span>
+                    Recomendaciones
+                </h2>
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 30px; text-align: center; margin-top: 50px;">
+                    <h3 style="color: #155724; margin-bottom: 10px;">✓ Excelente</h3>
+                    <p style="color: #155724; font-size: 16px;">No se detectaron áreas críticas que requieran recomendaciones.</p>
+                </div>
+            `;
+            document.body.appendChild(noRecDiv);
+            const noRecCanvas = await html2canvas(noRecDiv, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+            pdf.addImage(noRecCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+            document.body.removeChild(noRecDiv);
+        }
+        
+        pdf.save(`Reporte_${empresa}.pdf`);
+        document.body.removeChild(container);
+    }, 1000);
+}
+
+// FUNCIONES AUXILIARES (SEGURIDAD Y NULOS)
+function safeSetValue(id, val) {
+    const el = document.getElementById(id);
+    if(el) el.value = val || '';
+}
+
+function addLocation(sucursal, estado, municipio) {
+    const sInput = document.getElementById('sucursal-input');
+    const eInput = document.getElementById('estado-input');
+    const mInput = document.getElementById('municipio-input');
+    
+    const sVal = sucursal || sInput.value.trim();
+    const eVal = estado || eInput.value;
+    const mVal = municipio || mInput.value;
+    
+    if (sVal && eVal && mVal) {
+        const div = document.createElement('div');
+        div.className = 'location-item d-flex justify-content-between align-items-center p-2 border rounded mb-2';
+        div.dataset.sucursal = sVal;
+        div.dataset.estado = eVal;
+        div.dataset.municipio = mVal;
+        div.innerHTML = `<span><strong>${sVal}</strong> - <em>${municipio}, ${eVal}</em></span><button type="button" class="btn-close"></button>`;
+        document.getElementById('lista-ubicaciones').appendChild(div);
+        
+        if (!sucursal) {
+            sInput.value = ''; eInput.value = ''; mInput.innerHTML = '<option value="">-- Municipio --</option>'; mInput.disabled = true;
+        }
+    } else if (!sucursal) {
+        alert('Complete todos los campos.');
+    }
+}
+
+// GUARDAR
+async function saveSurvey(isFinalizing) {
+    const btn = isFinalizing ? document.getElementById('btnFinalize') : document.getElementById('btnSaveForLater');
+    const txt = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = 'Guardando...';
+
+    try {
+        const payload = collectAllData();
+        payload.status = isFinalizing ? 'completado' : 'pendiente';
+        payload.surveyId = window.currentSurveyId || null;
+
+        const response = await fetch('save_survey.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+            window.currentSurveyId = res.surveyId;
+            if (isFinalizing) {
+                const scores = {};
+                Object.keys(scoreCounters).forEach(k => scores[k.replace(/-/g,' ')] = scoreCounters[k].value);
+                const generalScore = parseFloat(document.getElementById('general-score-value').textContent)||0;
+                
+                generateReport(payload, scores, generalScore);
+                alert('Guardado y generando reporte...');
+                loadPendingSurveys();
+            } else {
+                alert('Guardado correctamente.');
+                loadPendingSurveys();
+            }
+        } else {
+            alert('Error: ' + res.message);
+        }
+    } catch (e) {
+        console.error(e);
+        // Fallback offline
+        if(isFinalizing) generateReport(collectAllData(), {}, 0);
+    } finally {
+        btn.disabled = false; btn.innerHTML = txt;
+    }
+}
+
+// POPULATE FORM (CON FIX DE FECHAS, NULOS Y SECCIONES)
+function populateForm(d) {
+    document.getElementById('main-form').reset();
+    document.getElementById('lista-ubicaciones').innerHTML = '';
+    window.currentSurveyId = d.SurveyID;
+
+    // Campos directos
+    safeSetValue('empresaNombre', d.Empresa);
+    safeSetValue('descripcionEmpresa', d.descripcionEmpresa);
+    
+    // Fix Fecha ISO
+    if(d.FechaEntrevista) safeSetValue('fechaEntrevista', d.FechaEntrevista.split('T')[0]);
+    
+    safeSetValue('certificacion', d.Certificaciones);
+    safeSetValue('principalesClientes', d.PrincipalesClientes);
+    safeSetValue('numeroPoliza', d.numeroPoliza);
+    
+    // Checkboxes
+    if(d.TipoMercancia) {
+        d.TipoMercancia.split(', ').forEach(t => {
+            if(t.startsWith('Otro:')) safeSetValue('tipoMercanciaOtro', t.split(':')[1].trim());
+            else {
+                const cb = document.querySelector(`input[name="tipoMercancia"][value="${t}"]`);
+                if(cb) cb.checked = true;
+            }
+        });
+    }
+    if(d.estadosServicio) {
+        d.estadosServicio.split(', ').forEach(s => {
+            const cb = document.querySelector(`input[name="estadosServicio"][value="${s}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
+
+    // Sección 2
+    safeSetValue('estadoMatriz', d.estadoMatriz);
+    if(d.estadoMatriz) {
+        populateMunicipios(d.estadoMatriz, 'municipioMatriz');
+        safeSetValue('municipioMatriz', d.municipioMatriz);
+    }
+    safeSetValue('numConductores', d.numConductores);
+    // ... otros campos numéricos ...
+    safeSetValue('numTalleres', d.numTalleres);
+    safeSetValue('kmRecorridosMes', d.kmRecorridosMes);
+    safeSetValue('viajesAnio', d.viajesAnio);
+    safeSetValue('lesionadosMes', d.lesionadosMes);
+    safeSetValue('lesionadosAnio', d.lesionadosAnio);
+    safeSetValue('muertosMes', d.muertosMes);
+    safeSetValue('muertosAnio', d.muertosAnio);
+
+    // Siniestralidad
+    if(d.fechaConsultaSiniestralidad) safeSetValue('fechaConsultaSiniestralidad', d.fechaConsultaSiniestralidad.split('T')[0]);
+    safeSetValue('frecuenciaSiniestralidad', d.frecuenciaSiniestralidad);
+    safeSetValue('severidadSiniestralidad', d.severidadSiniestralidad);
+
+    const tbody = document.getElementById('siniestrosTableBody');
+    tbody.innerHTML = '';
+    if(d.tablaSiniestros && Array.isArray(d.tablaSiniestros)) {
+        d.tablaSiniestros.forEach(r => addSiniestroRow(r.tipo, r.num, r.monto));
+    } else {
+        addSiniestroRow();
+    }
+
+    // RESTAURAR SECCIONES DESACTIVADAS (Fix visual)
+    if(d.SeccionesDesactivadas) {
+        currentDisabledSections = d.SeccionesDesactivadas.split(',');
+    } else {
+        currentDisabledSections = [];
+    }
+    updateSectionToggleUI(); // Refrescar botones
+
+    // Entrevistados y Preguntas
+    if(typeof data !== 'undefined') {
+        Object.keys(data).forEach(area => {
+            safeSetValue(`entrevistado_${area.replace(/\s+/g,'-')}`, d['Entrevistado_'+area.replace(/ /g,'_')] || d['Entrevistado_'+area.replace(/[^a-zA-Z0-9]/g,'')]);
+            safeSetValue(`puesto_${area.replace(/\s+/g,'-')}`, d['Puesto_'+area.replace(/ /g,'_')] || d['Puesto_'+area.replace(/[^a-zA-Z0-9]/g,'')]);
+            safeSetValue(`antiguedad_${area.replace(/\s+/g,'-')}`, d['Antiguedad_'+area.replace(/ /g,'_')] || d['Antiguedad_'+area.replace(/[^a-zA-Z0-9]/g,'')]);
+        });
+
+        Object.values(data).flat().forEach(q => {
+            const rKey = 'Pregunta_'+q.contador;
+            const recKey = 'Recomendacion_'+q.contador;
+            if(d[rKey]) {
+                if(q.informativa) safeSetValue('respuesta_'+q.contador, d[rKey]);
+                else {
+                    const rad = document.querySelector(`input[name="pregunta_${q.contador}"][value="${d[rKey]}"]`);
+                    if(rad) rad.checked = true;
+                }
+            }
+            if(d[recKey]) safeSetValue('recomendacion_'+q.contador, d[recKey]);
+            checkQuestionAnswered(q);
+        });
+    }
+    
+    updateProgress();
+    checkFormCompletion();
+    alert('Datos cargados y secciones restauradas.');
+}
+
+async function loadPendingSurveys() {
+    const pContainer = document.getElementById('pending-surveys-list');
+    const cContainer = document.getElementById('completed-surveys-list');
+    
+    const renderItem = (s, type) => {
+        const date = s.Timestamp ? new Date(s.Timestamp).toLocaleDateString('es-MX') : 'S/F';
+        const color = type === 'pendiente' ? 'warning' : 'success';
+        return `
+        <div class="card mb-2 border-${color}" style="border-left-width: 4px;">
+            <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                <div><strong class="text-dark small">${s.Empresa || 'Sin Nombre'}</strong><div class="text-muted" style="font-size: 0.75rem;">ID: ${s.SurveyID} | ${date}</div></div>
+                <button class="btn btn-sm btn-outline-${color} resume-btn" data-survey-id="${s.SurveyID}">${type === 'pendiente' ? 'Retomar' : 'Modificar'}</button>
+            </div>
+        </div>`;
+    };
+
+    try {
+        const response = await fetch(`get_pending_surveys.php?t=${new Date().getTime()}`);
+        if (!response.ok) throw new Error("Offline");
+        const surveys = await response.json();
+        window.allPendingSurveys = surveys;
+        
+        const pending = surveys.filter(s => s.Status === 'pendiente');
+        const completed = surveys.filter(s => s.Status === 'completado');
+
+        if (pContainer) pContainer.innerHTML = pending.length ? pending.map(s => renderItem(s, 'pendiente')).join('') : '<p class="text-muted small">No hay pendientes.</p>';
+        if (cContainer) cContainer.innerHTML = completed.length ? completed.map(s => renderItem(s, 'completado')).join('') : '<p class="text-muted small">No hay historial.</p>';
+    } catch (e) {
+        if(pContainer) pContainer.innerHTML = '<p class="text-muted">Sin conexión.</p>';
+    }
+}
+</script>
+</body>
+</html><script id="f5_cspm">(function(){var f5_cspm={f5_p:'CPNGHIOFJJKNCJNLHABEEFBNEBPLPDOOIIKIEPKKEMDPHIBDAHPAOEIIINMJMGKCPAMBKMIDCHPNKJNGAOCAKIAMABDOCBCJGLNANKNGOKLJKKLNPBAKGMDEDHHEFCJK',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script><script id="f5_cspm">(function(){var f5_cspm={f5_p:'OLLMGBICGKFIDCLGOAEIOMBOHLNHMNCFAPAKLAKLCMIFONCODFJOOHBCJFFJIMOINPGBKCCKELEFJNLECCHAEDABALNMJOKKDIHLMHDOGBCHMIGPELIMCKGBALNIIHBG',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script><script id="f5_cspm">(function(){var f5_cspm={f5_p:'CPOLPDNOABKHKJCAEBJBGLICCNHIPABCLJOPKMCKPKFMHPPKDKFJDEIEDKPKNDEKCJCBMMOKAACIPIIIJIJAIHAJAAKGGELCBMNPLLJAILIBMIFJNNIFNAALMJGPNFGE',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script>
