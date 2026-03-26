@@ -444,15 +444,16 @@ body {
                     </div>
 
 
-                    <div class="row g-3 mb-3">
-                      <div class="col-md-7"><label class="form-label">¿Cuáles fueron los riesgos identificados en los últimos 2 eventos de robos consumados, tanto de vehículo como de mercancía?</label><input id="riesgosViales" class="form-control" type="text"></div>
+                    <div class="row g-3">
+                      <div class="col-md-7"><label class="form-label">¿Cuáles fueron los riesgos identificados en los últimos 2 eventos de robos consumados, tanto de vehículo como de mercancía?</label>
+                        <textarea class="form-control" id="riesgosViales" rows="2"></textarea>
+                      </div>
                     </div>
 
-
-
-
                     <div class="row g-3">
-                      <div class="col-md-7"><label class="form-label">¿Qué oportunidades, en materia de prevención, identifica la empresa para mitigar los eventos de robo y aumentar la probabilidad de recuperación?</label><input id="oportunidadesMejora" class="form-control" type="text"></div>
+                      <div class="col-md-7"><label class="form-label">¿Qué oportunidades, en materia de prevención, identifica la empresa para mitigar los eventos de robo y aumentar la probabilidad de recuperación?</label>
+                        <textarea class="form-control" id="oportunidadesMejora" rows="2"></textarea>
+                      </div>
                     </div>
 
 
@@ -593,7 +594,11 @@ body {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 
-<script>
+<script type="module">
+// --- FIREBASE IMPORTS ---
+import { loginUser, registerUser, logoutUser, onAuthChange, getCurrentUser } from './js/firebase-auth.js';
+import { saveSurveyToFirestore, loadAllSurveys } from './js/firebase-db.js';
+
 // --- VARIABLES GLOBALES ---
 window.allPendingSurveys = [];
 const scoreCounters = {};
@@ -1667,28 +1672,23 @@ function initLoginSystem() {
         loginButton.disabled = true; loginButton.textContent = 'Verificando...';
         
         try {
-            const response = await fetch('login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass })
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                anime({ targets: loginOverlay, opacity: 0, duration: 500, easing: 'easeOutQuad', complete: () => { loginOverlay.style.display = 'none'; } });
-                mainContent.style.display = 'block';
-                anime({ targets: mainContent, opacity: [0, 1], duration: 800 });
-                loadPendingSurveys();
-            } else {
-                loginError.textContent = result.message || 'Error de credenciales.';
-                anime({ targets: '#login-box', translateX: [0, -10, 10, 0], duration: 400 });
-                loginButton.disabled = false; loginButton.textContent = 'Ingresar';
-            }
-        } catch (error) {
-            console.warn("Backend no disponible, modo offline.");
+            await loginUser(user, pass);
             anime({ targets: loginOverlay, opacity: 0, duration: 500, easing: 'easeOutQuad', complete: () => { loginOverlay.style.display = 'none'; } });
             mainContent.style.display = 'block';
+            anime({ targets: mainContent, opacity: [0, 1], duration: 800 });
             loadPendingSurveys();
+        } catch (error) {
+            let msg = 'Usuario o contraseña incorrectos.';
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                msg = 'Usuario o contraseña incorrectos.';
+            } else if (error.code === 'auth/too-many-requests') {
+                msg = 'Demasiados intentos. Espere un momento.';
+            } else if (error.code === 'auth/invalid-email') {
+                msg = 'Formato de usuario no válido.';
+            }
+            loginError.textContent = msg;
+            anime({ targets: '#login-box', translateX: [0, -10, 10, 0], duration: 400 });
+            loginButton.disabled = false; loginButton.textContent = 'Ingresar';
         }
     };
 
@@ -1706,15 +1706,19 @@ function initLoginSystem() {
         const user = document.getElementById('register-username').value;
         const pass = document.getElementById('register-password').value;
         const code = document.getElementById('register-code').value;
+        const regError = document.getElementById('register-error');
+        const regSuccess = document.getElementById('register-success');
+        regError.textContent = '';
+        regSuccess.textContent = '';
         try {
-            const response = await fetch('register.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass, code: code })
-            });
-            const res = await response.json();
-            if(res.success) document.getElementById('register-success').textContent = 'Usuario creado.';
-            else document.getElementById('register-error').textContent = res.message;
-        } catch(e) { document.getElementById('register-error').textContent = 'Error de conexión.'; }
+            await registerUser(user, pass, code);
+            regSuccess.textContent = 'Usuario creado con éxito.';
+        } catch(e) {
+            let msg = e.message || 'Error de conexión.';
+            if (e.code === 'auth/email-already-in-use') msg = 'Este nombre de usuario ya está en uso.';
+            else if (e.code === 'auth/weak-password') msg = 'La contraseña debe tener al menos 6 caracteres.';
+            regError.textContent = msg;
+        }
     });
 }
 
@@ -2534,12 +2538,7 @@ async function saveSurvey(isFinalizing) {
         payload.surveyId = window.currentSurveyId || null;
 
 
-        const response = await fetch('save_survey.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-        const res = await response.json();
+        const res = await saveSurveyToFirestore(payload);
 
 
         if (res.success) {
@@ -2708,9 +2707,7 @@ async function loadPendingSurveys() {
 
 
     try {
-        const response = await fetch(`get_pending_surveys.php?t=${new Date().getTime()}`);
-        if (!response.ok) throw new Error("Offline");
-        const surveys = await response.json();
+        const surveys = await loadAllSurveys();
         window.allPendingSurveys = surveys;
         
         const pending = surveys.filter(s => s.Status === 'pendiente');
@@ -2720,29 +2717,10 @@ async function loadPendingSurveys() {
         if (pContainer) pContainer.innerHTML = pending.length ? pending.map(s => renderItem(s, 'pendiente')).join('') : '<p class="text-muted small">No hay pendientes.</p>';
         if (cContainer) cContainer.innerHTML = completed.length ? completed.map(s => renderItem(s, 'completado')).join('') : '<p class="text-muted small">No hay historial.</p>';
     } catch (e) {
-        if(pContainer) pContainer.innerHTML = '<p class="text-muted">Sin conexión.</p>';
+        console.error('Error cargando encuestas:', e);
+        if(pContainer) pContainer.innerHTML = '<p class="text-muted">Error al cargar datos.</p>';
     }
 }
 </script>
-<script type="text/javascript" src="/_Incapsula_Resource?SWJIYLWA=719d34d31c8e3a6e6fffd425f7e032f3&ns=1&cb=443369475" async></script></body>
-</html><script id="f5_cspm">(function(){var f5_cspm={f5_p:'CPNGHIOFJJKNCJNLHABEEFBNEBPLPDOOIIKIEPKKEMDPHIBDAHPAOEIIINMJMGKCPAMBKMIDCHPNKJNGAOCAKIAMABDOCBCJGLNANKNGOKLJKKLNPBAKGMDEDHHEFCJK',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
-return;}}
-catch(err){return;}
-setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
-{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
-f5_cspm.go();}());</script><script id="f5_cspm">(function(){var f5_cspm={f5_p:'OLLMGBICGKFIDCLGOAEIOMBOHLNHMNCFAPAKLAKLCMIFONCODFJOOHBCJFFJIMOINPGBKCCKELEFJNLECCHAEDABALNMJOKKDIHLMHDOGBCHMIGPELIMCKGBALNIIHBG',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
-return;}}
-catch(err){return;}
-setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
-{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
-f5_cspm.go();}());</script><script id="f5_cspm">(function(){var f5_cspm={f5_p:'CPOLPDNOABKHKJCAEBJBGLICCNHIPABCLJOPKMCKPKFMHPPKDKFJDEIEDKPKNDEKCJCBMMOKAACIPIIIJIJAIHAJAAKGGELCBMNPLLJAILIBMIFJNNIFNAALMJGPNFGE',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
-return;}}
-catch(err){return;}
-setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
-{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
-f5_cspm.go();}());</script><script id="f5_cspm">(function(){var f5_cspm={f5_p:'CMGCKOIBBFODGHKBIGMIMBCFEHNIGMBPPEPBCPAPIDGJHAOAPMIAFJFAGPPDKILDOHOBHPMOOIEHMHBDFBAAPELBALLDOKKNDGNDNCNIMKDGBOOCGOIPPPBHMIDFGDDH',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr1638151841aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
-return;}}
-catch(err){return;}
-setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
-{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
-f5_cspm.go();}());</script>
+</body>
+</html>
