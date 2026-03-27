@@ -43,9 +43,8 @@ export async function saveSurveyToFirestore(payload) {
   const isUpdate = !!surveyId;
 
   if (!surveyId) {
-    const cleanName = payload.empresa
+    const username = (user.displayName || user.email.split("@")[0])
       .replace(/[^a-zA-Z0-9]/g, "")
-      .substring(0, 5)
       .toUpperCase();
     const now = new Date();
     const dateStr =
@@ -56,7 +55,7 @@ export async function saveSurveyToFirestore(payload) {
       String(now.getHours()).padStart(2, "0") +
       String(now.getMinutes()).padStart(2, "0") +
       String(now.getSeconds()).padStart(2, "0");
-    surveyId = "PRQ_" + dateStr + "_" + cleanName;
+    surveyId = "PRQ_" + dateStr + "_" + username;
   }
 
   // Construir documento
@@ -88,7 +87,7 @@ export async function saveSurveyToFirestore(payload) {
     lesionadosMes: payload.lesionadosMes || "",
     estadoMatriz: payload.estadoMatriz || "",
     municipioMatriz: payload.municipioMatriz || "",
-    UbicacionesAdicionales: payload.ubicacionesAdicionales || "",
+    ubicacionesAdicionales: payload.ubicacionesAdicionales || [],
 
     // Siniestralidad
     fechaConsultaSiniestralidad: payload.fechaConsultaSiniestralidad || "",
@@ -125,6 +124,13 @@ export async function saveSurveyToFirestore(payload) {
  */
 export async function loadAllSurveys() {
   try {
+    const user = getCurrentUser();
+    if (!user) return [];
+
+    const username = (user.displayName || user.email.split("@")[0])
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
+
     const q = query(
       collection(db, SURVEYS_COLLECTION),
       orderBy("Timestamp", "desc")
@@ -133,6 +139,9 @@ export async function loadAllSurveys() {
     const surveys = [];
 
     snapshot.forEach((docSnap) => {
+      const id = docSnap.id;
+      // Solo mostrar encuestas cuyo ID termine con el username del usuario actual
+      if (!id.endsWith("_" + username)) return;
       const d = docSnap.data();
 
       // Convertir de vuelta a formato plano compatible con populateForm()
@@ -157,7 +166,7 @@ export async function loadAllSurveys() {
         lesionadosMes: d.lesionadosMes || "",
         estadoMatriz: d.estadoMatriz || "",
         municipioMatriz: d.municipioMatriz || "",
-        UbicacionesAdicionales: d.UbicacionesAdicionales || "",
+        ubicacionesAdicionales: d.ubicacionesAdicionales || [],
         fechaConsultaSiniestralidad: d.fechaConsultaSiniestralidad || "",
         frecuenciaSiniestralidad: d.frecuenciaSiniestralidad || "",
         severidadSiniestralidad: d.severidadSiniestralidad || "",
@@ -178,8 +187,14 @@ export async function loadAllSurveys() {
 
       // Reconstruir claves de preguntas para populateForm()
       if (d.respuestas && typeof d.respuestas === "object") {
+        // Formato nuevo: mapa { "1": "1", "2": "0" }
         Object.keys(d.respuestas).forEach((contador) => {
           flat["Pregunta_" + contador] = d.respuestas[contador] || "";
+        });
+      } else if (d.respuestasCuestionario && Array.isArray(d.respuestasCuestionario)) {
+        // Formato antiguo: array [{contador, respuesta, ...}]
+        d.respuestasCuestionario.forEach((r) => {
+          flat["Pregunta_" + r.contador] = r.respuesta || "";
         });
       }
 
