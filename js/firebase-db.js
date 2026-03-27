@@ -15,6 +15,17 @@ import {
 const SURVEYS_COLLECTION = "surveys";
 
 /**
+ * Convierte el array [{contador, respuesta}, ...] a un mapa plano {"1": "1", "2": "0", ...}
+ */
+function buildRespuestasMap(arr) {
+  const map = {};
+  arr.forEach((r) => {
+    map[String(r.contador)] = r.respuesta != null ? String(r.respuesta) : "";
+  });
+  return map;
+}
+
+/**
  * Guarda (crea o actualiza) una encuesta en Firestore.
  * Retorna { success, message, surveyId }
  */
@@ -94,8 +105,8 @@ export async function saveSurveyToFirestore(payload) {
     // Entrevistados (objeto anidado)
     seccionesInfo: payload.seccionesInfo || {},
 
-    // Respuestas (array de objetos)
-    respuestasCuestionario: payload.respuestasCuestionario || []
+    // Respuestas: mapa simple { "1": "1", "2": "0", "35": "texto libre", ... }
+    respuestas: buildRespuestasMap(payload.respuestasCuestionario || [])
   };
 
   try {
@@ -166,10 +177,9 @@ export async function loadAllSurveys() {
       }
 
       // Reconstruir claves de preguntas para populateForm()
-      if (d.respuestasCuestionario && Array.isArray(d.respuestasCuestionario)) {
-        d.respuestasCuestionario.forEach((r) => {
-          flat["Pregunta_" + r.contador] = r.respuesta || "";
-          flat["Recomendacion_" + r.contador] = r.recomendacion || "";
+      if (d.respuestas && typeof d.respuestas === "object") {
+        Object.keys(d.respuestas).forEach((contador) => {
+          flat["Pregunta_" + contador] = d.respuestas[contador] || "";
         });
       }
 

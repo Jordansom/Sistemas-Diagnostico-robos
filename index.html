@@ -1969,6 +1969,7 @@ function collectAllData() {
         empresa: document.getElementById('empresaNombre').value.trim(),
         descripcionEmpresa: document.getElementById('descripcionEmpresa').value.trim(), 
         fechaEntrevista: document.getElementById('fechaEntrevista').value.trim(),
+        numeroPoliza: document.getElementById('numeroPoliza').value.trim(),
         certificaciones: document.getElementById('certificacion').value.trim(),
         principalesClientes: document.getElementById('principalesClientes').value.trim(),
         tipoMercancia: mercanciaSeleccionada.join(', '),
@@ -1982,8 +1983,8 @@ function collectAllData() {
         kmRecorridosMes: document.getElementById('kmRecorridosMes').value,
         viajesAnio: document.getElementById('viajesAnio').value,
         lesionadosMes: document.getElementById('lesionadosMes').value,
-        riesgosViales: document.getElementById('riesgosViales').values,
-        oportunidadesMejora: document.getElementById('oportunidadesMejora').values,
+        riesgosViales: document.getElementById('riesgosViales').value,
+        oportunidadesMejora: document.getElementById('oportunidadesMejora').value,
         /*lesionadosAnio: document.getElementById('lesionadosAnio').value,
         muertosMes: document.getElementById('muertosMes').value,
         muertosAnio: document.getElementById('muertosAnio').value,
@@ -2033,12 +2034,8 @@ function collectAllData() {
             const el = document.querySelector(`input[name="pregunta_${q.contador}"]:checked`);
             if(el) resp = el.value;
         }
-            const recEl = document.getElementById(`recomendacion_${q.contador}`);
-            const rec = recEl ? recEl.value.trim() : '';
-            
             datos.respuestasCuestionario.push({
-                contador: q.contador, pregunta: q.pregunta, respuesta: resp,
-                recomendacion: rec || q.recomendacion || ''
+                contador: q.contador, respuesta: resp
             });
         });
     }
