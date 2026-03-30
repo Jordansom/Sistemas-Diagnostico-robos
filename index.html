@@ -13,6 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
@@ -220,6 +221,19 @@ body {
 #siniestrosTable .btn-remove-row { color: #dc3545; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: color 0.2s; }
 #siniestrosTable .btn-remove-row:hover { color: #a71d2a; }
 .placeholder-transparent::placeholder { color: rgba(0, 0, 0, 0.3) !important; font-style: italic; }
+
+/* Estilos para upload de imagen siniestralidad */
+.siniestralidad-upload-area { border: 2px dashed #dc3545; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; background: #fff5f5; position: relative; }
+.siniestralidad-upload-area:hover { border-color: #a71d2a; background: #ffe0e0; }
+.siniestralidad-upload-area.has-image { border-style: solid; border-color: #28a745; background: #f0fff4; cursor: default; }
+.siniestralidad-upload-area .upload-icon { font-size: 3rem; color: #dc3545; margin-bottom: 0.5rem; }
+.siniestralidad-upload-area.has-image .upload-icon { color: #28a745; }
+.siniestralidad-upload-area .upload-text { color: #6c757d; font-size: 0.95rem; }
+.siniestralidad-preview { max-width: 100%; max-height: 350px; border-radius: 8px; margin-top: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-ref-help { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #dc3545; background: white; color: #dc3545; font-weight: 700; font-size: 1.1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+.btn-ref-help:hover { background: #dc3545; color: white; }
+.btn-remove-image { position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
+#referenceModal .modal-body img { max-width: 100%; border-radius: 8px; }
 
 
 @media (max-width: 768px) {
@@ -518,53 +532,42 @@ body {
 
                         <div class="col-12 mt-4">
                             <div class="card border-danger mb-3" style="border: 1px solid #dc3545;">
-                                <div class="card-header bg-danger text-white fw-bold">Análisis de Siniestralidad (Datos para Informe)</div>
+                                <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
+                                    <span>Análisis de Siniestralidad (Imagen para Informe)</span>
+                                    <button type="button" class="btn-ref-help" data-bs-toggle="modal" data-bs-target="#referenceModal" title="Ver imagen de referencia">?</button>
+                                </div>
                                 <div class="card-body">
-                                    <div class="row g-3">
-                                        
-                                        <div class="col-md-4">
-                                            <label class="form-label">Fecha de consulta de Siniestralidad</label>
-                                            <input type="date" id="fechaConsultaSiniestralidad" class="form-control">
-                                        </div>
-                                        <div class="col-md-8">
-                                            <label class="form-label">Frecuencia Anualizada Actual (%)</label>
-                                            <input type="number" id="frecuenciaSiniestralidad" class="form-control placeholder-transparent" placeholder="Ej: 31 (Hasta la fecha se observa que la frecuencia reportada...)">
-                                            <small class="text-muted d-block mt-1">
-                                                <em>El reporte indicará si excede el estándar deseable del 24%.</em>
-                                            </small>
-                                        </div>
-                                        
-                                        <div class="col-md-4">
-                                            <label class="form-label">Valor de Severidad ($)</label>
-                                            <input type="number" id="severidadSiniestralidad" class="form-control placeholder-transparent" placeholder="Ej: 17716">
-                                            <small class="text-muted">Se usará en: "En cuanto a la severidad el análisis indica un valor de..."</small>
-                                        </div>
-
-
-                                        <div class="col-12 mt-3">
-                                            <label class="form-label fw-bold">Desglose de Siniestros</label>
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered table-sm table-striped" id="siniestrosTable">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Tipo de Siniestro</th>
-                                                            <th style="width: 150px;">Número</th>
-                                                            <th style="width: 180px;">Monto ($)</th>
-                                                            <th style="width: 50px;"></th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="siniestrosTableBody">
-                                                        </tbody>
-                                                </table>
-                                            </div>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addSiniestroRow()">
-                                                <span style="font-size: 1.2em; vertical-align: middle;">+</span> Agregar Fila de Siniestro
-                                            </button>
-                                        </div>
+                                    <p class="text-muted mb-3"><small>Suba una captura de pantalla del reporte de siniestralidad. Haga clic en el área o arrastre la imagen (peso menor a 2 MB).</small></p>
+                                    <div class="siniestralidad-upload-area" id="siniestralidad-upload-area" onclick="document.getElementById('siniestralidad-file-input').click()">
+                                        <div class="upload-icon">📷</div>
+                                        <div class="upload-text">Haga clic aquí o arrastre una imagen para subir</div>
+                                        <img id="siniestralidad-preview" class="siniestralidad-preview" style="display:none;" alt="Vista previa">
+                                        <button type="button" class="btn-remove-image" id="btn-remove-siniestralidad" style="display:none;" onclick="event.stopPropagation(); removeSiniestroImage()" title="Eliminar imagen">&times;</button>
                                     </div>
+                                    <input type="file" id="siniestralidad-file-input" accept="image/*" style="display:none;">
+                                    <div id="siniestralidad-upload-status" class="mt-2 text-center" style="display:none;"></div>
                                 </div>
                             </div>
                         </div>
+
+<!-- Modal de Referencia -->
+<div class="modal fade" id="referenceModal" tabindex="-1" aria-labelledby="referenceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="referenceModalLabel">📌 Imagen de Referencia</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-muted mb-3">Suba una imagen similar a esta, con los datos de siniestralidad del cliente:</p>
+        <img src="Referencia.png" alt="Ejemplo de imagen de siniestralidad" style="max-width:100%; border-radius:8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
                         </div>
                   </div>
                 </div>
@@ -598,6 +601,7 @@ body {
 // --- FIREBASE IMPORTS ---
 import { loginUser, registerUser, logoutUser, onAuthChange, getCurrentUser } from './js/firebase-auth.js';
 import { saveSurveyToFirestore, loadAllSurveys } from './js/firebase-db.js';
+import { compressImageToBase64 } from './js/firebase-storage.js';
 
 // --- VARIABLES GLOBALES ---
 window.allPendingSurveys = [];
@@ -1073,11 +1077,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderServicioEstadosCheckboxes(); 
     populateEstados();
     
-    // 2. Inicializar tabla de siniestros con una fila vacía si no hay datos
-    const tbody = document.getElementById('siniestrosTableBody');
-    if(tbody && tbody.children.length === 0) {
-        addSiniestroRow(); 
-    }
+    // 2. Inicializar upload de imagen siniestralidad
+    initSiniestroImageUpload();
     
     // 3. Inicializar funciones base del sistema original
     renderForm(); // Renderiza las secciones 3-10 (Preguntas)
@@ -1184,47 +1185,82 @@ function populateMunicipios(estado, municipioSelectId) {
 }
 
 
-// 4. (NUEVO) Lógica de Tabla Siniestros (Agregar/Quitar Filas)
-function addSiniestroRow(tipo = '', num = '', monto = '') {
-    const tbody = document.getElementById('siniestrosTableBody');
-    if (!tbody) return;
+// 4. (NUEVO) Lógica de Imagen Siniestralidad (Upload/Preview)
+let siniestroImageURL = '';
 
+function initSiniestroImageUpload() {
+    const dropArea = document.getElementById('siniestralidad-upload-area');
+    const fileInput = document.getElementById('siniestralidad-file-input');
+    if (!dropArea || !fileInput) return;
 
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" class="form-control form-control-sm siniestro-tipo" placeholder="Ej. Colisión" value="${tipo}">
-        </td>
-        <td>
-            <input type="number" class="form-control form-control-sm siniestro-num text-center" placeholder="0" value="${num}">
-        </td>
-        <td>
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">$</span>
-                <input type="number" class="form-control siniestro-monto text-end" placeholder="0.00" value="${monto}">
-            </div>
-        </td>
-        <td class="text-center align-middle">
-            <span class="btn-remove-row" onclick="removeSiniestroRow(this)" title="Eliminar fila">&times;</span>
-        </td>
-    `;
-    tbody.appendChild(row);
+    // Drag and drop
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropArea.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropArea.style.borderColor = '#a71d2a'; dropArea.style.background = '#ffe0e0'; });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        dropArea.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); if (!dropArea.classList.contains('has-image')) { dropArea.style.borderColor = '#dc3545'; dropArea.style.background = '#fff5f5'; } });
+    });
+    dropArea.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type.startsWith('image/')) handleSiniestroFile(files[0]);
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) handleSiniestroFile(fileInput.files[0]);
+    });
 }
 
+async function handleSiniestroFile(file) {
+    if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen no debe superar 5 MB.');
+        return;
+    }
 
-function removeSiniestroRow(btn) {
-    const row = btn.closest('tr');
-    const tbody = document.getElementById('siniestrosTableBody');
-    // Si es la única fila, limpiar valores en vez de borrar para no dejar la tabla vacía
-    if (tbody.children.length > 1) {
-        row.remove();
-    } else {
-        row.querySelectorAll('input').forEach(input => input.value = '');
+    const preview = document.getElementById('siniestralidad-preview');
+    const dropArea = document.getElementById('siniestralidad-upload-area');
+    const removeBtn = document.getElementById('btn-remove-siniestralidad');
+    const statusDiv = document.getElementById('siniestralidad-upload-status');
+
+    statusDiv.style.display = 'block';
+    statusDiv.innerHTML = '<span class="text-primary"><i>Procesando imagen...</i></span>';
+
+    try {
+        const base64 = await compressImageToBase64(file, 800, 0.7);
+        siniestroImageURL = base64;
+
+        preview.src = base64;
+        preview.style.display = 'block';
+        dropArea.classList.add('has-image');
+        dropArea.querySelector('.upload-text').textContent = 'Imagen cargada ✔';
+        removeBtn.style.display = 'flex';
+
+        const sizeKB = Math.round((base64.length * 3 / 4) / 1024);
+        statusDiv.innerHTML = `<span class="text-success">✔ Imagen lista (${sizeKB} KB)</span>`;
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+    } catch (err) {
+        console.error('Error al procesar imagen:', err);
+        statusDiv.innerHTML = '<span class="text-danger">Error: ' + err.message + '</span>';
     }
 }
-// Exponer al scope global para onclick inline
-window.addSiniestroRow = addSiniestroRow;
-window.removeSiniestroRow = removeSiniestroRow;
+
+function removeSiniestroImage() {
+    const preview = document.getElementById('siniestralidad-preview');
+    const dropArea = document.getElementById('siniestralidad-upload-area');
+    const removeBtn = document.getElementById('btn-remove-siniestralidad');
+    const fileInput = document.getElementById('siniestralidad-file-input');
+
+    preview.src = '';
+    preview.style.display = 'none';
+    dropArea.classList.remove('has-image');
+    dropArea.querySelector('.upload-text').textContent = 'Haga clic aquí o arrastre una imagen para subir';
+    removeBtn.style.display = 'none';
+    fileInput.value = '';
+
+    if (siniestroImageURL) {
+        siniestroImageURL = '';
+    }
+}
+window.removeSiniestroImage = removeSiniestroImage;
 
 
 // 5. Gráficos y Animaciones
@@ -1863,6 +1899,7 @@ function updateProgress() {
 }
 
 
+window.toggleSection = toggleSection;
 function toggleSection(buttonEl, sectionName) {
     const sectionCard = buttonEl.closest('.section-card'); 
     const index = currentDisabledSections.indexOf(sectionName);
@@ -1955,18 +1992,8 @@ function collectAllData() {
     document.querySelectorAll('input[name="estadosServicio"]:checked').forEach(c => estadosServicio.push(c.value));
 
 
-    // 3. Tabla Siniestros
-    const tablaSiniestros = [];
-    document.querySelectorAll('#siniestrosTableBody tr').forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        if(inputs.length >= 3) {
-            const tipo = inputs[0].value.trim();
-            const num = inputs[1].value.trim();
-            const monto = inputs[2].value.trim();
-            if(tipo || num || monto) tablaSiniestros.push({ tipo, num, monto });
-        }
-    });
-
+    // 3. Imagen Siniestralidad
+    const imgSiniestralidad = siniestroImageURL || '';
 
     const datos = {
         empresa: document.getElementById('empresaNombre').value.trim(),
@@ -1997,11 +2024,8 @@ function collectAllData() {
         ubicacionesAdicionales: Array.from(document.querySelectorAll('.location-item')).map(item => ({sucursal: item.dataset.sucursal, estado: item.dataset.estado, municipio: item.dataset.municipio})),
 
 
-        // Siniestralidad
-        fechaConsultaSiniestralidad: document.getElementById('fechaConsultaSiniestralidad').value,
-        frecuenciaSiniestralidad: document.getElementById('frecuenciaSiniestralidad').value,
-        severidadSiniestralidad: document.getElementById('severidadSiniestralidad').value,
-        tablaSiniestros: tablaSiniestros,
+        // Siniestralidad (imagen)
+        imagenSiniestralidad: imgSiniestralidad,
 
 
         respuestasCuestionario: [],
@@ -2038,7 +2062,7 @@ function collectAllData() {
             if(el) resp = el.value;
         }
             datos.respuestasCuestionario.push({
-                contador: q.contador, respuesta: resp
+                contador: q.contador, respuesta: resp, pregunta: q.pregunta, recomendacion: q.recomendacion
             });
         });
     }
@@ -2082,9 +2106,7 @@ function generateReport(formData, scores, generalScore) {
     const certificaciones = formData.certificaciones || 'Sin especificar';
     const principalesClientes = formData.principalesClientes || 'Sin especificar';
 
-
-    const freq = formData.frecuenciaSiniestralidad || '0';
-    const sev = formData.severidadSiniestralidad ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(formData.severidadSiniestralidad) : '$0.00';
+    const imagenSiniestralidad = formData.imagenSiniestralidad || '';
     
     // Preparar HTML de tablas
     let scoresTableHTML = '';
@@ -2106,19 +2128,8 @@ function generateReport(formData, scores, generalScore) {
     if(!recomendacionesHTML) recomendacionesHTML = '<tr><td colspan="3" style="text-align:center">No se detectaron áreas críticas.</td></tr>';
 
 
-    let tablaSinHTML = '';
-    if(formData.tablaSiniestros) {
-        formData.tablaSiniestros.forEach(r => {
-            const m = parseFloat(r.monto)||0;
-            const n = parseInt(r.num)||0;
-            tablaSinHTML += `<tr><td style="border-bottom:1px solid #ddd;padding:5px;">${r.tipo}</td><td style="border-bottom:1px solid #ddd;padding:5px;text-align:center">${n}</td><td style="border-bottom:1px solid #ddd;padding:5px;text-align:right">$${m.toLocaleString()}</td></tr>`;
-        });
-    }
-
-
     // --- CORRECCIÓN CLAVE: CALCULAR VARIABLES ANTES DEL STRING HTML ---
     const analisisMercancia = getAnalisisMercancia(formData.tipoMercanciaArray || []);
-
 
     const container = document.createElement('div');
     container.id = "pdf-content";
@@ -2126,12 +2137,14 @@ function generateReport(formData, scores, generalScore) {
     // Inyectar HTML
     container.innerHTML = `
     <style>
-        :root { --color-primary: #82027C; --color-secondary: #156082; --color-accent: #00A3E0; --light-gray: #f8f9fa; --medium-gray: #e9ecef; --dark-gray: #343a40; --text-primary: #2c3e50; --text-secondary: #5a6c7d; --page-bg: #ffffff; --border-color: #dee2e6; --shadow-sm: 0 2px 4px rgba(0,0,0,0.06); --shadow-md: 0 4px 12px rgba(0,0,0,0.1); --shadow-lg: 0 8px 24px rgba(0,0,0,0.15); }
+        :root { --color-primary: #941B80; --color-secondary: #0096AE; --color-accent: #0096AE; --light-gray: #f8f9fa; --medium-gray: #e9ecef; --dark-gray: #343a40; --text-primary: #2c3e50; --text-secondary: #5a6c7d; --page-bg: #ffffff; --border-color: #dee2e6; --shadow-sm: none; --shadow-md: none; --shadow-lg: none; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-primary); background: var(--medium-gray); line-height: 1.6; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .page { width: 8.5in; min-height: 11in; padding: 0.75in; margin: 0 auto; background: var(--page-bg); box-shadow: var(--shadow-md); position: relative; display: flex; flex-direction: column; page-break-after: always; }
-        .cover-page { background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%); color: white; justify-content: space-between; text-align: center; padding: 1.5in 0.75in; }
-        .cover-page .logo-container { background: #7F8B9C; padding: 30px; border-radius: 15px; display: inline-block; margin-bottom: 60px; box-shadow: var(--shadow-lg); }
+        .page { width: 8.5in; min-height: 11in; padding: 0.75in; margin: 0 auto; background: var(--page-bg); position: relative; display: flex; flex-direction: column; page-break-after: always; }
+        .cover-page { background: white; color: var(--color-primary); justify-content: space-between; text-align: center; padding: 0; position: relative; overflow: hidden; }
+        .cover-page .portada-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+        .cover-page .cover-content { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 1.5in 0.75in; }
+        .cover-page .logo-container { background: #ACB9C3; padding: 30px; border-radius: 15px; display: inline-block; margin-bottom: 60px; }
         .cover-page img.logo { width: 220px; height: auto; }
         .cover-page h1 { font-size: 48px; font-weight: 700; margin: 40px 0 20px; color: white; border: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); letter-spacing: 1px; }
         .cover-page h2 { font-size: 32px; font-weight: 300; margin: 20px 0; color: rgba(255,255,255,0.95); border: none; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; backdrop-filter: blur(10px); }
@@ -2145,8 +2158,8 @@ function generateReport(formData, scores, generalScore) {
         .disclaimer-page { background: var(--light-gray); border: 2px solid var(--border-color); border-radius: 8px; padding: 0.75in !important; }
         .disclaimer-page h2 { color: var(--dark-gray); text-align: center; margin-bottom: 25px; font-size: 20px; }
         .disclaimer-page p { font-size: 12px; color: var(--text-secondary); margin: 15px 0; padding: 10px 15px; background: white; border-radius: 5px; border-left: 4px solid var(--color-primary); }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; background: white; box-shadow: var(--shadow-sm); border-radius: 8px; overflow: hidden; }
-        thead { background: linear-gradient(135deg, var(--color-secondary), var(--color-primary)); }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; background: white; border-radius: 8px; overflow: hidden; }
+        thead { background: var(--color-secondary); }
         th { color: white; padding: 14px 12px; text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; }
         td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
         tbody tr { transition: background-color 0.2s ease; }
@@ -2162,7 +2175,7 @@ function generateReport(formData, scores, generalScore) {
         .chart-container { width: 100%; height: 8.5in; margin: 0 auto; padding: 20px; background: white; display: flex; align-items: center; justify-content: center; }
         #reportChartCanvas { display: none !important; } 
         #reportChartImage { width: 100%; height: auto; max-height: 8in; }
-        .content-section { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid var(--color-accent); box-shadow: var(--shadow-sm); }
+        .content-section { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid var(--color-accent); }
         .recommendations-table { font-size: 14px; }
         .recommendations-table td { vertical-align: top; padding: 12px 10px; line-height: 1.5; }
         .recommendations-table td:first-child { font-weight: 700; color: var(--color-primary); text-align: center; background: var(--light-gray); width: 50px; }
@@ -2178,13 +2191,16 @@ function generateReport(formData, scores, generalScore) {
     </style>
     
     <div class="page cover-page">
-        <div>
-            <div class="logo-container">
-            <img src="PRQ.png" alt="Logo Quálitas" class="logo"></div>
-            <h1>Análisis de Riesgo</h1>
-            <h2>${empresa}</h2>
+        <img id="portadaBgImg" src="" class="portada-bg" alt="" style="display:none;">
+        <div class="cover-content">
+            <div>
+                <div class="logo-container">
+                <img src="PRQ.png" alt="Logo Quálitas" class="logo"></div>
+                <h1 style="color: #941B80; text-shadow: none;">Análisis de Riesgo</h1>
+                <h2 style="color: #0096AE; background: rgba(255,255,255,0.7); border: none;">${empresa}</h2>
+            </div>
+            <div class="metadata" style="background: rgba(255,255,255,0.7);"><p style="color: #2c3e50;"><strong>Fecha:</strong> ${fechaEntrevista}</p><p style="color: #2c3e50;"><strong>Elaborado por:</strong> Prevención de Riesgos Quálitas</p></div>
         </div>
-        <div class="metadata"><p><strong>Fecha:</strong> ${fechaEntrevista}</p><p><strong>Elaborado por:</strong> Prevención de Riesgos Quálitas</p></div>
     </div>
 
 
@@ -2285,16 +2301,7 @@ function generateReport(formData, scores, generalScore) {
 
     <div class="page">
         <h2><span class="section-number">4</span>Siniestralidad</h2>
-        <h3>4.1. Frecuencia</h3>
-        <p> Durante el analsiis se encuentra que tiene una frecuencia de:  <strong>${freq}%</strong>.</p>
-        <h3>4.2. Severidad</h3>
-        <p>Se observa una severidad con un valor de : <strong>${sev}</strong>.</p>
-        <h3>4.3. Desglose</h3>
-        <p> Desglose de siniestralidad indicando los principales siniestros sufridos.
-        <table>
-            <thead><tr><th>Tipo</th><th>Número</th><th>Monto</th></tr></thead>
-            <tbody>${tablaSinHTML}</tbody>
-        </table>
+        ${imagenSiniestralidad ? `<div style="text-align:center; padding: 20px;"><img src="${imagenSiniestralidad}" alt="Análisis de Siniestralidad" style="max-width:100%; max-height:8in; border-radius:8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>` : '<p style="text-align:center; color:#999;">No se adjuntó imagen de siniestralidad.</p>'}
     </div>
 
     <div class="page">
@@ -2331,6 +2338,27 @@ function generateReport(formData, scores, generalScore) {
 
     // Renderizar gráfico y luego PDF
     setTimeout(async () => {
+        // --- Cargar portada.pdf como imagen de fondo ---
+        try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const portadaPdf = await pdfjsLib.getDocument('portada.pdf').promise;
+            const portadaPage = await portadaPdf.getPage(1);
+            const vp = portadaPage.getViewport({ scale: 3 });
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = vp.width;
+            offCanvas.height = vp.height;
+            const offCtx = offCanvas.getContext('2d');
+            await portadaPage.render({ canvasContext: offCtx, viewport: vp }).promise;
+            const portadaImg = container.querySelector('#portadaBgImg');
+            if (portadaImg) {
+                portadaImg.src = offCanvas.toDataURL('image/jpeg', 0.92);
+                portadaImg.style.display = 'block';
+                await new Promise(r => setTimeout(r, 200));
+            }
+        } catch (err) {
+            console.warn('No se pudo cargar portada.pdf:', err);
+        }
+
         const pdf = new jsPDF('p', 'in', 'letter');
         const pageWidth = 8.5;
         const pageHeight = 11;
@@ -2391,8 +2419,8 @@ function generateReport(formData, scores, generalScore) {
         
         for (let i = 0; i < allPages.length; i++) {
             if (i > 0) pdf.addPage();
-            const canvas = await html2canvas(allPages[i], { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+            const canvas = await html2canvas(allPages[i], { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, pageWidth, pageHeight);
         }
         
         // ============ RENDERIZAR RECOMENDACIONES EN MÚLTIPLES PÁGINAS ============
@@ -2435,7 +2463,7 @@ function generateReport(formData, scores, generalScore) {
                 pageRecs.forEach(q => {
                     rowsHTML += `
                         <tr>
-                            <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; text-align: center; font-weight: 700; color: #82027C; background: #f8f9fa; width: 50px; vertical-align: top;">${q.contador}</td>
+                            <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; text-align: center; font-weight: 700; color: #941B80; background: #f8f9fa; width: 50px; vertical-align: top;">${q.contador}</td>
                             <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; width: 35%; font-weight: 500; vertical-align: top; font-size: 13px;">${q.pregunta}</td>
                             <td style="padding: 12px 10px; border-bottom: 1px solid #dee2e6; vertical-align: top; font-size: 13px; line-height: 1.6;">${q.recomendacion}</td>
                         </tr>
@@ -2444,8 +2472,8 @@ function generateReport(formData, scores, generalScore) {
                 
                 recPageDiv.innerHTML = `
                     ${headerHTML}
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.06); border-radius: 8px; overflow: hidden;">
-                        <thead style="background: linear-gradient(135deg, #156082, #82027C);">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; background: white; border-radius: 8px; overflow: hidden;">
+                        <thead style="background: #0096AE;">
                             <tr>
                                 <th style="color: white; padding: 14px 10px; text-align: center; font-weight: 600; width: 50px;">N°</th>
                                 <th style="color: white; padding: 14px 10px; text-align: left; font-weight: 600; width: 35%;">Área Evaluada</th>
@@ -2459,8 +2487,8 @@ function generateReport(formData, scores, generalScore) {
                 
                 document.body.appendChild(recPageDiv);
                 
-                const recCanvas = await html2canvas(recPageDiv, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
-                pdf.addImage(recCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+                const recCanvas = await html2canvas(recPageDiv, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                pdf.addImage(recCanvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, pageWidth, pageHeight);
                 
                 document.body.removeChild(recPageDiv);
             }
@@ -2470,8 +2498,8 @@ function generateReport(formData, scores, generalScore) {
             const noRecDiv = document.createElement('div');
             noRecDiv.style.cssText = 'width: 8.5in; min-height: 11in; padding: 0.75in; background: white; font-family: Segoe UI, Tahoma, sans-serif;';
             noRecDiv.innerHTML = `
-                <h2 style="color: #156082; font-size: 24px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #00A3E0;">
-                    <span style="display: inline-block; width: 35px; height: 35px; background: #82027C; color: white; border-radius: 50%; text-align: center; line-height: 35px; font-weight: 700; margin-right: 10px;">6</span>
+                <h2 style="color: #0096AE; font-size: 24px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #0096AE;">
+                    <span style="display: inline-block; width: 35px; height: 35px; background: #941B80; color: white; border-radius: 50%; text-align: center; line-height: 35px; font-weight: 700; margin-right: 10px;">6</span>
                     Recomendaciones
                 </h2>
                 <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 30px; text-align: center; margin-top: 50px;">
@@ -2480,8 +2508,8 @@ function generateReport(formData, scores, generalScore) {
                 </div>
             `;
             document.body.appendChild(noRecDiv);
-            const noRecCanvas = await html2canvas(noRecDiv, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
-            pdf.addImage(noRecCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+            const noRecCanvas = await html2canvas(noRecDiv, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            pdf.addImage(noRecCanvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, pageWidth, pageHeight);
             document.body.removeChild(noRecDiv);
         }
         
@@ -2623,23 +2651,25 @@ function populateForm(d) {
     safeSetValue('muertosMes', d.muertosMes);
     safeSetValue('muertosAnio', d.muertosAnio);
     */
-    // Siniestralidad
-    if(d.fechaConsultaSiniestralidad) safeSetValue('fechaConsultaSiniestralidad', d.fechaConsultaSiniestralidad.split('T')[0]);
-    safeSetValue('frecuenciaSiniestralidad', d.frecuenciaSiniestralidad);
-    safeSetValue('severidadSiniestralidad', d.severidadSiniestralidad);
+    // Siniestralidad (imagen)
+    if(d.imagenSiniestralidad) {
+        siniestroImageURL = d.imagenSiniestralidad;
+        const preview = document.getElementById('siniestralidad-preview');
+        const dropArea = document.getElementById('siniestralidad-upload-area');
+        const removeBtn = document.getElementById('btn-remove-siniestralidad');
+        if (preview && dropArea) {
+            preview.src = d.imagenSiniestralidad;
+            preview.style.display = 'block';
+            dropArea.classList.add('has-image');
+            dropArea.querySelector('.upload-text').textContent = 'Imagen cargada ✔';
+            removeBtn.style.display = 'flex';
+        }
+    }
 
 
     // Ubicaciones adicionales
     if(d.ubicacionesAdicionales && Array.isArray(d.ubicacionesAdicionales)) {
         d.ubicacionesAdicionales.forEach(u => addLocation(u.sucursal, u.estado, u.municipio));
-    }
-
-    const tbody = document.getElementById('siniestrosTableBody');
-    tbody.innerHTML = '';
-    if(d.tablaSiniestros && Array.isArray(d.tablaSiniestros)) {
-        d.tablaSiniestros.forEach(r => addSiniestroRow(r.tipo, r.num, r.monto));
-    } else {
-        addSiniestroRow();
     }
 
 

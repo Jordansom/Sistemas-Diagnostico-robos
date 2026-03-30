@@ -89,11 +89,8 @@ export async function saveSurveyToFirestore(payload) {
     municipioMatriz: payload.municipioMatriz || "",
     ubicacionesAdicionales: payload.ubicacionesAdicionales || [],
 
-    // Siniestralidad
-    fechaConsultaSiniestralidad: payload.fechaConsultaSiniestralidad || "",
-    frecuenciaSiniestralidad: payload.frecuenciaSiniestralidad || "",
-    severidadSiniestralidad: payload.severidadSiniestralidad || "",
-    tablaSiniestros: payload.tablaSiniestros || [],
+    // Siniestralidad (imagen)
+    imagenSiniestralidad: payload.imagenSiniestralidad || "",
 
     // Comentarios
     comentariosFinales: payload.comentarioFinales || "",
@@ -167,10 +164,7 @@ export async function loadAllSurveys() {
         estadoMatriz: d.estadoMatriz || "",
         municipioMatriz: d.municipioMatriz || "",
         ubicacionesAdicionales: d.ubicacionesAdicionales || [],
-        fechaConsultaSiniestralidad: d.fechaConsultaSiniestralidad || "",
-        frecuenciaSiniestralidad: d.frecuenciaSiniestralidad || "",
-        severidadSiniestralidad: d.severidadSiniestralidad || "",
-        tablaSiniestros: d.tablaSiniestros || [],
+        imagenSiniestralidad: d.imagenSiniestralidad || "",
         comentarioFinales: d.comentariosFinales || "",
         SeccionesDesactivadas: d.SeccionesDesactivadas || ""
       };
